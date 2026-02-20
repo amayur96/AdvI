@@ -1,13 +1,26 @@
-# AdvI – The Future of Education
+# AdvI – AI Learning Intelligence System
 
-An AI-powered platform that improves classroom quality for both **students** and **faculty** while keeping education human-centered, fair, transparent, and trustworthy. Built for the 2026 AI Hackathon.
+AdvI is a two-sided AI learning platform that connects **students** and **faculty** through a continuous feedback loop. Students learn with an AI study agent, faculty monitor learning gaps in real time, and both experiences stay synchronized through shared analytics and lecture-grounded intelligence.
 
 ## Overview
 
-AdvI connects two sides of the classroom through AI:
+AdvI is organized into three layers:
 
-- **Students** interact with an AI study agent that guides them through preset comprehension questions and free-form lecture exploration.
-- **Faculty** get a real-time dashboard showing which concepts students are struggling with, AI-generated assessment questions, and deep-dive insights into learning gaps.
+- **Frontend Layer (UI):**
+  - **Student UI** for AI-guided learning conversations.
+  - **Faculty UI** for analytics, interventions, and question design.
+- **Intelligence Layer:**
+  - **AI Agent** drives student tutoring by checking preset-question progress and past conversation context.
+  - **LLM API** powers faculty insights by matching lecture concepts to student responses.
+- **Data Layer:**
+  - **Student DB** stores sessions, preset responses, and progression state.
+  - **Faculty DB** stores lecture materials and instructional context.
+
+Together these layers support three flows:
+
+- **Student flow:** student asks/answers → AI Agent checks progress + context → responses are stored in Student DB.
+- **Faculty flow:** faculty updates lecture goals/materials → LLM analyzes student evidence → faculty sees insights and suggested actions.
+- **Closed-loop flow:** faculty adjustments influence future student guidance; new student responses refresh faculty analytics continuously.
 
 ## Repository Structure
 
@@ -149,22 +162,29 @@ open student-wireframe.html
 
 ## System Architecture
 
-The platform consists of four core backend components:
+The architecture follows a layered model with role-specific flows:
 
-| Component | Role |
-|---|---|
-| **AI Agent** | Chatbot that interacts with students — guides them through preset questions then free-form discussion |
-| **Student Database** | Stores chat histories, preset question responses, and interaction data |
-| **Faculty Database** | Stores lecture notes and materials imported from Canvas |
-| **LLM API** | Analyzes student + faculty data to generate insights and suggested questions |
+| Layer | Components | Responsibility |
+|---|---|---|
+| **Frontend Layer** | Student UI, Faculty UI | Collect student/faculty interactions and display learning state |
+| **Intelligence Layer** | AI Agent, LLM API | Personalize student tutoring and generate faculty-facing insights |
+| **Data Layer** | Student DB, Faculty DB | Persist student evidence and lecture context for analysis |
 
-**Data flow:**
+### Flow breakdown
 
-1. Faculty upload lecture materials → stored in Faculty Database
-2. LLM API reads Faculty Database + Student Database → generates preset questions (written to Student Database) and faculty insights (displayed in Faculty UI)
-3. Student opens AI Agent → agent prompts with preset questions from Student Database, grounded in lecture content from Faculty Database
-4. Student completes preset questions → enters free-form mode to explore specific lectures
-5. Session ends → full conversation saved to Student Database for future context
+1. **Student flow**
+   - Student interacts with the Student UI.
+   - AI Agent checks preset-question completion and prior conversation memory.
+   - Student answers and messages are stored in Student DB.
+
+2. **Faculty flow**
+   - Faculty uses Faculty UI to review progress and manage lecture context.
+   - LLM API maps student performance to lecture concepts from Faculty DB.
+   - Faculty receives targeted insight cards, concept-risk signals, and suggested interventions.
+
+3. **Closed-loop flow**
+   - Faculty interventions (new questions, emphasis changes, concept focus) feed back into student guidance.
+   - New student responses are re-analyzed and reflected in faculty analytics, creating a continuous improvement loop.
 
 ## Prerequisites
 
