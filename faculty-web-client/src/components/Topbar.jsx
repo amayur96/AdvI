@@ -1,3 +1,5 @@
+import AiCompanion from "./AiCompanion";
+
 export default function Topbar({ lectureName, onOpenSidebar }) {
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-umblue-100 px-6 py-3 flex items-center justify-between">
@@ -5,9 +7,7 @@ export default function Topbar({ lectureName, onOpenSidebar }) {
       <div className="flex items-center gap-3">
         {/* Brand */}
         <div className="flex items-center gap-2 mr-2">
-          <div className="w-8 h-8 rounded-lg bg-umblue-700 flex items-center justify-center">
-            <span className="text-maize-500 text-xs font-extrabold">Ai</span>
-          </div>
+          <AiCompanion state="idle" size="sm" />
           <span className="font-extrabold text-umblue-700 text-base">AdvI</span>
         </div>
 
