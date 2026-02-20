@@ -20,6 +20,15 @@ export default function App() {
     question_responses: [],
     total_students: 0,
     ai_insights: [],
+    class_analytics: {
+      comprehension: 61,
+      questions_done: 76,
+      engagement: 78,
+      active_students: 142,
+      ai_conversations: 287,
+      avg_score: 61,
+    },
+    lecture_feedback: [],
   });
 
   const lecture = lectures.find((l) => l.id === currentLecture);
@@ -32,6 +41,8 @@ export default function App() {
     const fetchAnalytics = async () => {
       try {
         const data = await getAnalytics(lectureId);
+        console.log("Analytics data received:", data);
+        console.log("lecture_feedback:", data.lecture_feedback);
         // Always use backend data, even if empty
         setAnalytics({
           concept_mastery: data.concept_mastery || [],
@@ -39,6 +50,15 @@ export default function App() {
           question_responses: data.question_responses || [],
           total_students: data.total_students || 0,
           ai_insights: data.ai_insights || [],
+          class_analytics: data.class_analytics || {
+            comprehension: 61,
+            questions_done: 76,
+            engagement: 78,
+            active_students: 142,
+            ai_conversations: 287,
+            avg_score: 61,
+          },
+          lecture_feedback: data.lecture_feedback || [],
         });
       } catch (err) {
         console.error("Failed to fetch analytics:", err);
@@ -49,6 +69,30 @@ export default function App() {
           question_responses: [],
           total_students: 0,
           ai_insights: [],
+          class_analytics: {
+            comprehension: 61,
+            questions_done: 76,
+            engagement: 78,
+            active_students: 142,
+            ai_conversations: 287,
+            avg_score: 61,
+          },
+          lecture_feedback: [
+            {
+              bg: "bg-blue-50",
+              border: "border-blue-100",
+              tag: "Pacing",
+              title: "Slow down on pass-by-reference",
+              text: "Students spent 3x more AI time on this topic vs. others — the demo may need a second pass.",
+            },
+            {
+              bg: "bg-amber-50",
+              border: "border-amber-100",
+              tag: "Coverage",
+              title: "Add a concrete header-file example",
+              text: "58% comprehension on .h files — students asked for \"real project\" examples most frequently.",
+            },
+          ],
         });
       }
     };
@@ -107,7 +151,11 @@ export default function App() {
 
           {/* Center: Garmin-style analytics */}
           <div className="col-span-4">
-            <GarminAnalytics />
+            <GarminAnalytics 
+              classAnalytics={analytics.class_analytics}
+              questionResponses={analytics.question_responses}
+              lectureFeedback={analytics.lecture_feedback}
+            />
           </div>
 
           {/* Right: Suggested Questions + Course Materials dropdown */}

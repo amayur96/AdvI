@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { questionResponses } from "../data/mockData";
 
 /* ─── Animated Donut ───────────────────────────────────── */
 function DonutChart({ pct, size = 82, stroke = 9, color = "#0050B3", trackColor = "#E8EEF7", label, sublabel }) {
@@ -74,29 +73,6 @@ function PulseStat({ value, label, color = "#10b981" }) {
 }
 
 /* ─── Lecture Feedback Card ─────────────────────────────── */
-const lectureFeedback = [
-  {
-    bg: "bg-blue-50",
-    border: "border-blue-100",
-    tag: "Pacing",
-    title: "Slow down on pass-by-reference",
-    text: "Students spent 3x more AI time on this topic vs. others — the demo may need a second pass.",
-  },
-  {
-    bg: "bg-amber-50",
-    border: "border-amber-100",
-    tag: "Coverage",
-    title: "Add a concrete header-file example",
-    text: "58% comprehension on .h files — students asked for \"real project\" examples most frequently.",
-  },
-  {
-    bg: "bg-purple-50",
-    border: "border-purple-100",
-    tag: "Structure",
-    title: "Recap Lecture 2 briefly next time",
-    text: "18% of class is still stuck on variables — a 2-min recap could unblock a large group.",
-  },
-];
 
 function FeedbackCard({ item, visible }) {
   return (
@@ -113,13 +89,112 @@ function FeedbackCard({ item, visible }) {
 }
 
 /* ─── Main Component ────────────────────────────────────── */
-export default function GarminAnalytics() {
+export default function GarminAnalytics({ 
+  classAnalytics = {
+    comprehension: 61,
+    questions_done: 76,
+    engagement: 78,
+    active_students: 142,
+    ai_conversations: 287,
+    avg_score: 61,
+  },
+  questionResponses = [],
+  lectureFeedback = [],
+}) {
   const [insightsVisible, setInsightsVisible] = useState(false);
+  const [visibleInsights, setVisibleInsights] = useState([]);
+
+  // Track previous feedback length to detect new insights
+  const prevFeedbackLengthRef = useRef(0);
+  
+  // Animate insights in when they appear
+  useEffect(() => {
+    if (lectureFeedback.length > 0) {
+      const isNewInsight = lectureFeedback.length > prevFeedbackLengthRef.current;
+      
+      // Show first 2 insights immediately (they're always there)
+      // Then show 3rd insight with delay if it's new (after students complete questions)
+      lectureFeedback.forEach((_, index) => {
+        if (index < 2) {
+          // First 2 insights show immediately
+          setTimeout(() => {
+            setVisibleInsights((prev) => {
+              if (!prev.includes(index)) {
+                return [...prev, index];
+              }
+              return prev;
+            });
+          }, 400 + (index * 200));
+        } else if (index === 2) {
+          if (isNewInsight) {
+            // 3rd insight (from student chat completion) shows with delay
+            setTimeout(() => {
+              setVisibleInsights((prev) => {
+                if (!prev.includes(index)) {
+                  return [...prev, index];
+                }
+                return prev;
+              });
+            }, 1500); // Delay to show it appeared after completion
+          } else {
+            // 3rd insight already exists, show it immediately
+            setVisibleInsights((prev) => {
+              if (!prev.includes(index)) {
+                return [...prev, index];
+              }
+              return prev;
+            });
+          }
+        }
+      });
+      
+      prevFeedbackLengthRef.current = lectureFeedback.length;
+    } else {
+      setVisibleInsights([]);
+      prevFeedbackLengthRef.current = 0;
+    }
+  }, [lectureFeedback]);
+
+  // Use provided data or fallback to defaults
+  const comprehension = classAnalytics.comprehension || 61;
+  const questionsDone = classAnalytics.questions_done || 76;
+  const engagement = classAnalytics.engagement || 78;
+  const activeStudents = classAnalytics.active_students || 142;
+  const aiConvos = classAnalytics.ai_conversations || 287;
+  const avgScore = classAnalytics.avg_score || 61;
+  
+  // Use provided question responses or empty array
+  const responses = questionResponses.length > 0 ? questionResponses : [];
+  
+  // Use provided lecture feedback or empty array
+  const feedback = lectureFeedback.length > 0 ? lectureFeedback : [];
 
   useEffect(() => {
+    // Always show insights visible after a short delay
     const t = setTimeout(() => setInsightsVisible(true), 400);
     return () => clearTimeout(t);
   }, []);
+  
+  // Ensure first 2 insights are always visible after component mounts
+  useEffect(() => {
+    if (feedback.length >= 2 && insightsVisible) {
+      // Make sure first 2 are visible
+      setVisibleInsights((prev) => {
+        const updated = [...prev];
+        if (!updated.includes(0)) updated.push(0);
+        if (!updated.includes(1)) updated.push(1);
+        return updated;
+      });
+    }
+  }, [feedback.length, insightsVisible, feedback]);
+  
+  // Debug: log feedback to console
+  useEffect(() => {
+    console.log("GarminAnalytics - lectureFeedback:", lectureFeedback);
+    console.log("GarminAnalytics - feedback:", feedback);
+    console.log("GarminAnalytics - insightsVisible:", insightsVisible);
+    console.log("GarminAnalytics - visibleInsights:", visibleInsights);
+  }, [lectureFeedback, feedback, insightsVisible, visibleInsights]);
 
   return (
     <div className="bg-white rounded-2xl border border-umblue-100 shadow-sm p-4 h-full flex flex-col">
@@ -134,18 +209,18 @@ export default function GarminAnalytics() {
 
       {/* Donut ring row */}
       <div className="flex items-center justify-around gap-2 mb-4">
-        <DonutChart pct={61} size={82} stroke={9} color="#0050B3" label="Comprehension" sublabel="class avg" />
-        <DonutChart pct={76} size={82} stroke={9} color="#FFC107" label="Questions Done" sublabel="of assigned" />
-        <DonutChart pct={78} size={82} stroke={9} color="#10b981" label="Engagement" sublabel="active today" />
+        <DonutChart pct={comprehension} size={82} stroke={9} color="#0050B3" label="Comprehension" sublabel="class avg" />
+        <DonutChart pct={questionsDone} size={82} stroke={9} color="#FFC107" label="Questions Done" sublabel="of assigned" />
+        <DonutChart pct={engagement} size={82} stroke={9} color="#10b981" label="Engagement" sublabel="active today" />
       </div>
 
       <div className="h-px bg-umblue-50 mb-3" />
 
       {/* Pulse stats: Active Students · AI Convos · Avg Score */}
       <div className="flex items-start justify-around gap-2 mb-4">
-        <PulseStat value="142" label="Active Students" color="#0050B3" />
-        <PulseStat value="287" label="AI Convos" color="#FFC107" />
-        <PulseStat value="61%" label="Avg Score" color="#10b981" />
+        <PulseStat value={activeStudents.toString()} label="Active Students" color="#0050B3" />
+        <PulseStat value={aiConvos.toString()} label="AI Convos" color="#FFC107" />
+        <PulseStat value={`${avgScore}%`} label="Avg Score" color="#10b981" />
       </div>
 
       <div className="h-px bg-umblue-50 mb-3" />
@@ -190,9 +265,15 @@ export default function GarminAnalytics() {
         <span className="text-[9px] bg-purple-50 text-purple-600 font-semibold px-1.5 py-0.5 rounded-full">AI Insights</span>
       </div>
       <div className="flex flex-col gap-1.5 flex-1">
-        {lectureFeedback.map((item, i) => (
-          <FeedbackCard key={i} item={item} visible={insightsVisible} />
-        ))}
+        {feedback.length > 0 ? (
+          feedback.map((item, i) => (
+            <FeedbackCard key={i} item={item} visible={insightsVisible && visibleInsights.includes(i)} />
+          ))
+        ) : (
+          <div className="text-[9px] text-umblue-400 italic py-2">
+            AI insights will appear as students interact with questions...
+          </div>
+        )}
       </div>
     </div>
   );

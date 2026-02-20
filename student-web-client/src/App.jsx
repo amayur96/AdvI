@@ -63,6 +63,7 @@ export default function App() {
   const offlinePresetIdx = useRef(0);
   const offlineFreeformIdx = useRef(0);
   const isOffline = useRef(false);
+  const lastPollStateRef = useRef({ presetComplete: false, totalQuestions: 0 });
 
   // Fetch preset questions on mount and periodically to catch updates
   useEffect(() => {
@@ -80,34 +81,44 @@ export default function App() {
           setAnsweredCount((prev) => Math.min(prev, newTotal));
           
           // If questions changed and session is ready, refresh the current question state
-          // Throttle refreshes to avoid loops (max once per 5 seconds)
+          // Throttle refreshes to avoid loops (max once per 3 seconds)
           const now = Date.now();
           if (sessionReady && 
               Math.abs(newTotal - oldTotal) > 0 && 
               oldTotal > 0 && 
-              (now - lastRestartRef.current > 5000)) {
+              (now - lastRestartRef.current > 3000)) {
             try {
               lastRestartRef.current = now;
               const currentState = await getCurrentQuestion(STUDENT_ID, LECTURE_ID);
               if (!cancelled) {
                 // Update counts
-                setAnsweredCount(currentState.answered_count || 0);
                 const backendTotal = currentState.total_questions || newTotal;
+                const backendAnswered = currentState.answered_count || 0;
+                const wasComplete = presetComplete;
+                const nowComplete = currentState.preset_complete || false;
+                
+                setAnsweredCount(backendAnswered);
                 setTotalQuestions(backendTotal);
-                setPresetComplete(currentState.preset_complete || false);
+                setPresetComplete(nowComplete);
                 lastKnownTotalRef.current = backendTotal;
                 
-                // If there's a current question, update the greeting message to reflect correct counts
+                // If there's a current question available, show it
                 if (currentState.preset_question) {
+                  const qNum = backendAnswered + 1;
+                  const qTotal = backendTotal;
+                  const newQuestionText = `📝 *Note: ${newTotal - oldTotal} new question(s) have been added. There are now ${newTotal} total questions.*\n\n**Question ${qNum} of ${qTotal}:**\n${currentState.preset_question.question}`;
+                  
                   setMessages((prev) => {
                     if (prev.length === 0) return prev;
                     const lastMsg = prev[prev.length - 1];
-                    // Check if last message is an AI message that might contain a question/greeting
+                    
+                    // If we were in free-form mode and new questions were added, add a new message
+                    if (wasComplete && !nowComplete && lastMsg.role === "ai") {
+                      return [...prev, { role: "ai", text: newQuestionText, time: now() }];
+                    }
+                    
+                    // Otherwise, update the last message if it contains a question
                     if (lastMsg.role === "ai" && lastMsg.text.includes("Question")) {
-                      const qNum = currentState.answered_count + 1;
-                      const qTotal = currentState.total_questions;
-                      
-                      // Update both the intro count ("I have X questions") and the question number
                       let updatedText = lastMsg.text;
                       
                       // Replace intro count: "I have 3 questions" -> "I have {qTotal} questions"
@@ -121,7 +132,6 @@ export default function App() {
                       const questionMatch = updatedText.match(questionStartRegex);
                       if (questionMatch) {
                         const startIndex = questionMatch.index;
-                        // Replace from the question start to the end
                         const beforeQuestion = updatedText.substring(0, startIndex);
                         const newQuestionSection = `**Question ${qNum} of ${qTotal}:**\n${currentState.preset_question.question}`;
                         updatedText = beforeQuestion + newQuestionSection;
@@ -129,6 +139,12 @@ export default function App() {
                       
                       return [...prev.slice(0, -1), { ...lastMsg, text: updatedText }];
                     }
+                    
+                    // If last message is completion message and we have new questions, add new message
+                    if (wasComplete && !nowComplete && lastMsg.role === "ai") {
+                      return [...prev, { role: "ai", text: newQuestionText, time: now() }];
+                    }
+                    
                     return prev;
                   });
                 }
@@ -159,19 +175,49 @@ export default function App() {
     };
   }, [sessionReady]);
 
-  // Poll current question state periodically to keep counts in sync
+  // Poll current question state periodically to keep counts in sync and detect new questions
   useEffect(() => {
     if (!sessionReady) return;
     
     let cancelled = false;
+    
     const pollCurrentState = async () => {
       try {
         const currentState = await getCurrentQuestion(STUDENT_ID, LECTURE_ID);
         if (!cancelled) {
+          const newPresetComplete = currentState.preset_complete ?? false;
+          const newTotalQuestions = currentState.total_questions ?? 0;
+          const newAnsweredCount = currentState.answered_count ?? 0;
+          
+          const lastState = lastPollStateRef.current;
+          
           // Update counts from backend state
-          setAnsweredCount(currentState.answered_count ?? 0);
-          setTotalQuestions(currentState.total_questions ?? 0);
-          setPresetComplete(currentState.preset_complete ?? false);
+          setAnsweredCount(newAnsweredCount);
+          setTotalQuestions(newTotalQuestions);
+          setPresetComplete(newPresetComplete);
+          
+          // If we were in free-form mode and new questions were added, show them immediately
+          // Check if: (1) we were complete, (2) now we're not complete OR total increased, (3) there's a question to show
+          const questionsAdded = newTotalQuestions > lastState.totalQuestions;
+          const transitionedFromComplete = lastState.presetComplete && (!newPresetComplete || questionsAdded);
+          
+          if (transitionedFromComplete && currentState.preset_question) {
+            const qNum = newAnsweredCount + 1;
+            const qTotal = newTotalQuestions;
+            const addedCount = newTotalQuestions - lastState.totalQuestions;
+            const newQuestionText = `📝 *Note: ${addedCount} new question(s) have been added. There are now ${qTotal} total questions.*\n\n**Question ${qNum} of ${qTotal}:**\n${currentState.preset_question.question}`;
+            
+            setMessages((prev) => {
+              // Add new message with the question
+              return [...prev, { role: "ai", text: newQuestionText, time: now() }];
+            });
+          }
+          
+          // Update last state
+          lastPollStateRef.current = {
+            presetComplete: newPresetComplete,
+            totalQuestions: newTotalQuestions,
+          };
         }
       } catch (err) {
         // Silently fail - session might not exist yet
@@ -179,8 +225,8 @@ export default function App() {
       }
     };
 
-    // Poll every 3 seconds to keep counts synchronized
-    const interval = setInterval(pollCurrentState, 3000);
+    // Poll every 2 seconds to detect new questions quickly
+    const interval = setInterval(pollCurrentState, 2000);
     return () => {
       cancelled = true;
       clearInterval(interval);
@@ -205,6 +251,10 @@ export default function App() {
         setAnsweredCount(res.answered_count || 0);
         setTotalQuestions(backendTotal);
         lastKnownTotalRef.current = backendTotal;
+        lastPollStateRef.current = {
+          presetComplete: res.preset_complete || false,
+          totalQuestions: backendTotal,
+        };
         setSessionReady(true);
       } catch {
         if (!cancelled) startOfflineMode();

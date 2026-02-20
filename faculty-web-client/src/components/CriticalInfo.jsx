@@ -32,7 +32,7 @@ export default function CriticalInfo({ criticalConcepts = null, onDiveDeep }) {
   const concepts = criticalConcepts || [];
   
   return (
-    <div className="bg-white rounded-2xl border border-umblue-100 shadow-sm p-4 h-full flex flex-col" style={{ minHeight: "500px" }}>
+    <div className="bg-white rounded-2xl border border-umblue-100 shadow-sm p-4 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div>
@@ -52,13 +52,13 @@ export default function CriticalInfo({ criticalConcepts = null, onDiveDeep }) {
           <p className="text-sm text-umblue-400">No critical concepts yet</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-2.5 flex-1">
+        <div className="flex flex-col gap-2.5">
           {concepts.slice(0, 4).map((c) => {
             const s = severityStyles[c.severity] ?? severityStyles[400];
             return (
               <div
                 key={c.id}
-                className={`border border-umblue-100 rounded-xl p-3 hover:shadow-sm hover:border-umblue-200 transition-all cursor-pointer flex-1 flex flex-col justify-between ${s.bg}`}
+                className={`border border-umblue-100 rounded-xl p-3 hover:shadow-sm hover:border-umblue-200 transition-all cursor-pointer flex flex-col justify-between ${s.bg}`}
                 onClick={() => onDiveDeep(c.id, c.concept, c.pct)}
               >
                 {/* Top row: name + pct badge */}

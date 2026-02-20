@@ -138,37 +138,57 @@ class ChatAgent:
 
         if in_preset:
             reply = await self._handle_preset_answer(user_message)
+            # After answering, _preset_index has been incremented
+            # Refresh questions again in case new ones were added while processing
+            questions_changed_after, _ = self._refresh_preset_questions()
+            if questions_changed_after:
+                questions_changed = True
         else:
+            # Was in free-form mode, but check if new questions were added
             reply = await self._handle_freeform(user_message)
+            # Refresh questions after free-form to catch any new questions
+            questions_changed_after, old_count_after = self._refresh_preset_questions()
+            if questions_changed_after:
+                questions_changed = True
+                old_count = old_count_after  # Update old_count for comparison below
 
         # If questions changed, add a note to inform the student and update the count
+        new_questions_added = False
         if questions_changed:
             new_count = len(self._preset_questions)
             if new_count > old_count:
+                new_questions_added = True
+                # New questions were added
                 reply = f"📝 *Note: {new_count - old_count} new question(s) have been added. There are now {new_count} total questions.*\n\n{reply}"
             elif new_count < old_count:
                 reply = f"📝 *Note: The question set has been updated ({old_count} → {new_count} questions).*\n\n{reply}"
 
         self._record("assistant", reply)
 
+        # Recompute preset_complete after handling the answer (index may have changed)
+        # If new questions were added and we were done, we're no longer done
         preset_complete = self._preset_index >= len(self._preset_questions)
         next_q = None
 
-        if in_preset and preset_complete:
+        # If new questions were added, always show them (even if we were in free-form mode)
+        if new_questions_added and self._preset_index < len(self._preset_questions):
+            # New questions available - show the next one
+            next_q = self._preset_questions[self._preset_index]
+            current_q_num = self._preset_index + 1
+            total_q = len(self._preset_questions)
+            reply += f"\n\n**Question {current_q_num} of {total_q}:**\n{next_q.question}"
+            preset_complete = False
+        elif preset_complete and not new_questions_added:
+            # All questions answered and no new ones added - show transition
             transition = f"\n\n{AGENT_PRESET_TRANSITION}"
             reply += transition
-
-        if in_preset and not preset_complete:
-            if self._preset_index < len(self._preset_questions):
-                next_q = self._preset_questions[self._preset_index]
-                # Update the question numbering to reflect current total
-                current_q_num = self._preset_index + 1
-                total_q = len(self._preset_questions)
-                reply += f"\n\n**Question {current_q_num} of {total_q}:**\n{next_q.question}"
-            else:
-                # Index out of bounds - mark as complete
-                preset_complete = True
-                reply += f"\n\n{AGENT_PRESET_TRANSITION}"
+        elif self._preset_index < len(self._preset_questions):
+            # There are more questions - show the next one
+            next_q = self._preset_questions[self._preset_index]
+            current_q_num = self._preset_index + 1
+            total_q = len(self._preset_questions)
+            reply += f"\n\n**Question {current_q_num} of {total_q}:**\n{next_q.question}"
+            preset_complete = False
 
         return reply, next_q, preset_complete
 

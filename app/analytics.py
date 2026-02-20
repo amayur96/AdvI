@@ -122,12 +122,38 @@ async def get_lecture_responses(lecture_id: str) -> dict:
         )
         
         if not questions:
+            # Return empty analytics but still include default lecture feedback insights
+            default_insights = [
+                {
+                    "bg": "bg-blue-50",
+                    "border": "border-blue-100",
+                    "tag": "Pacing",
+                    "title": "Slow down on pass-by-reference",
+                    "text": "Students spent 3x more AI time on this topic vs. others — the demo may need a second pass.",
+                },
+                {
+                    "bg": "bg-amber-50",
+                    "border": "border-amber-100",
+                    "tag": "Coverage",
+                    "title": "Add a concrete header-file example",
+                    "text": "58% comprehension on .h files — students asked for \"real project\" examples most frequently.",
+                },
+            ]
             return {
                 "concept_mastery": [],
                 "critical_concepts": [],
                 "question_responses": [],
                 "total_students": 0,
                 "ai_insights": [],
+                "class_analytics": {
+                    "comprehension": 61,
+                    "questions_done": 0,
+                    "engagement": 50,
+                    "active_students": 3,
+                    "ai_conversations": 150,
+                    "avg_score": 61,
+                },
+                "lecture_feedback": default_insights,
             }
         
         # Get all responses for these questions
@@ -271,18 +297,31 @@ async def get_lecture_responses(lecture_id: str) -> dict:
                 # Calculate actual struggling percentage
                 actual_struggling_pct = int((struggling_count / total) * 100)
                 
+                # Calculate strong percentage (for decreasing struggling when students do well)
+                strong_count = sum(1 for q in concept_qualities if q == "strong")
+                strong_pct = int((strong_count / total) * 100)
+                
                 # Blend baseline with actual data, but weight toward baseline for stability
                 # With few responses, baseline has more weight
                 # With more responses, actual data has more influence
-                if total < 5:
-                    # Few responses: 70% baseline, 30% actual
-                    struggling_pct = int((baseline * 0.7) + (actual_struggling_pct * 0.3))
+                if total < 3:
+                    # Very few responses: 80% baseline, 20% actual
+                    struggling_pct = int((baseline * 0.8) + (actual_struggling_pct * 0.2))
+                elif total < 5:
+                    # Few responses: 60% baseline, 40% actual
+                    struggling_pct = int((baseline * 0.6) + (actual_struggling_pct * 0.4))
                 elif total < 10:
-                    # Medium responses: 50% baseline, 50% actual
-                    struggling_pct = int((baseline * 0.5) + (actual_struggling_pct * 0.5))
+                    # Medium responses: 40% baseline, 60% actual
+                    struggling_pct = int((baseline * 0.4) + (actual_struggling_pct * 0.6))
                 else:
-                    # Many responses: 30% baseline, 70% actual
-                    struggling_pct = int((baseline * 0.3) + (actual_struggling_pct * 0.7))
+                    # Many responses: 20% baseline, 80% actual
+                    struggling_pct = int((baseline * 0.2) + (actual_struggling_pct * 0.8))
+                
+                # If students are doing well (high strong percentage), decrease struggling more
+                if strong_pct > 60:
+                    struggling_pct = max(20, struggling_pct - 5)  # Decrease by 5% if doing well
+                elif strong_pct < 30:
+                    struggling_pct = min(80, struggling_pct + 5)  # Increase by 5% if struggling
                 
                 # Set reasonable bounds: between 20% and 80% for demo
                 struggling_pct = max(20, min(80, struggling_pct))
@@ -384,6 +423,38 @@ async def get_lecture_responses(lecture_id: str) -> dict:
         if unique_students < 3:
             unique_students = max(unique_students, 3)  # Show at least 3 for demo
         
+        # Calculate class analytics metrics for demo - these update dynamically based on student responses
+        # Comprehension: average of concept mastery percentages
+        avg_comprehension = int(sum(cm["pct"] for cm in concept_mastery) / len(concept_mastery)) if concept_mastery else 61
+        
+        # Questions Done: percentage of questions that have at least one response
+        questions_with_responses = len([q for q in questions if q.id in question_responses and len(question_responses[q.id]) > 0])
+        questions_done_pct = int((questions_with_responses / len(questions)) * 100) if questions else 0
+        
+        # For demo: if no responses yet, show baseline
+        if questions_done_pct == 0 and len(questions) > 0:
+            questions_done_pct = 33  # Show 1/3 done as baseline
+        
+        # Engagement: based on number of responses (more responses = higher engagement)
+        # Scale: 0 responses = 50%, 1-3 = 55-65%, 4-6 = 65-75%, 7+ = 75-85%
+        total_responses = len(responses)
+        if total_responses == 0:
+            engagement_pct = 50
+        elif total_responses <= 3:
+            engagement_pct = 50 + (total_responses * 5)  # 55-65%
+        elif total_responses <= 6:
+            engagement_pct = 65 + ((total_responses - 3) * 3)  # 65-75%
+        else:
+            engagement_pct = min(85, 75 + ((total_responses - 6) * 2))  # 75-85%
+        engagement_pct = int(engagement_pct)
+        
+        # AI Convos: estimate based on responses (each response = ~2-3 messages in conversation)
+        # Start with baseline, increase with each response
+        ai_conversations = 150 + (total_responses * 3)  # Baseline 150, +3 per response
+        
+        # Avg Score: same as comprehension for demo
+        avg_score = avg_comprehension
+        
         # Get LLM insights for recommendations
         ai_insights = []
         try:
@@ -401,6 +472,65 @@ async def get_lecture_responses(lecture_id: str) -> dict:
         except Exception as e:
             log.warning(f"Could not fetch LLM insights: {e}")
         
+        # Generate lecture feedback insights from AI insights (for GarminAnalytics)
+        # Always show 2 initial insights for demo, add more as students interact
+        lecture_feedback_insights = []
+        
+        # Default initial insights (always show these for demo)
+        default_insights = [
+            {
+                "bg": "bg-blue-50",
+                "border": "border-blue-100",
+                "tag": "Pacing",
+                "title": "Slow down on pass-by-reference",
+                "text": "Students spent 3x more AI time on this topic vs. others — the demo may need a second pass.",
+            },
+            {
+                "bg": "bg-amber-50",
+                "border": "border-amber-100",
+                "tag": "Coverage",
+                "title": "Add a concrete header-file example",
+                "text": "58% comprehension on .h files — students asked for \"real project\" examples most frequently.",
+            },
+        ]
+        
+        # Always include the 2 default insights
+        lecture_feedback_insights.extend(default_insights)
+        
+        # Check if all preset questions have been answered (at least one response per question)
+        questions_with_responses = set(r.question_id for r in responses)
+        all_questions_answered = len(questions) > 0 and len(questions_with_responses) >= len(questions)
+        
+        # Add 3rd insight when students have completed all preset questions (for demo)
+        if all_questions_answered:
+            if len(ai_insights) > 0:
+                insight = ai_insights[0]
+                rec_lower = insight.recommendation.lower() if insight.recommendation else ""
+                if "slow" in rec_lower or "pace" in rec_lower or "time" in rec_lower:
+                    tag, bg, border = "Pacing", "bg-blue-50", "border-blue-100"
+                elif "example" in rec_lower or "add" in rec_lower or "include" in rec_lower:
+                    tag, bg, border = "Coverage", "bg-amber-50", "border-amber-100"
+                elif "recap" in rec_lower or "review" in rec_lower or "structure" in rec_lower:
+                    tag, bg, border = "Structure", "bg-purple-50", "border-purple-100"
+                else:
+                    tag, bg, border = "Improvement", "bg-green-50", "border-green-100"
+                title = (insight.recommendation or insight.concept).split(".")[0][:50]
+                if len(title) > 50:
+                    title = title[:47] + "..."
+                text = insight.summary or f"{insight.struggling_pct}% of students are struggling with {insight.concept}."
+            else:
+                tag, bg, border = "Improvement", "bg-green-50", "border-green-100"
+                title = "Reinforce function parameters from student chat"
+                text = "Based on completed preset questions, students would benefit from one more example on pass-by-value vs pass-by-reference in the next lecture."
+            
+            lecture_feedback_insights.append({
+                "bg": bg,
+                "border": border,
+                "tag": tag,
+                "title": title,
+                "text": text,
+            })
+        
         # Ensure we return all critical concepts (not just top 4) since they match preset questions
         return {
             "concept_mastery": sorted(concept_mastery, key=lambda x: x["pct"], reverse=True),
@@ -408,4 +538,13 @@ async def get_lecture_responses(lecture_id: str) -> dict:
             "question_responses": question_response_data,
             "total_students": unique_students,
             "ai_insights": ai_insights,  # LLM-generated insights with recommendations
+            "class_analytics": {
+                "comprehension": avg_comprehension,
+                "questions_done": questions_done_pct,
+                "engagement": engagement_pct,
+                "active_students": unique_students,
+                "ai_conversations": ai_conversations,
+                "avg_score": avg_score,
+            },
+            "lecture_feedback": lecture_feedback_insights,
         }
