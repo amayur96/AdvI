@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { startSession, sendMessage, sendFreeform } from "./services/api";
 import { ensureSeeded } from "./services/seed";
 import Topbar from "./components/Topbar";
@@ -6,10 +7,45 @@ import ChatCard from "./components/ChatCard";
 import LectureInfoCard from "./components/LectureInfoCard";
 import KeyConceptsCard from "./components/KeyConceptsCard";
 import ActivityCard from "./components/ActivityCard";
-import LectureTopicsCard from "./components/LectureTopicsCard";
 
 const STUDENT_ID = "alex";
 const LECTURE_ID = "lec4";
+
+// ── Offline dummy responses (used when backend is unreachable) ────────────────
+const OFFLINE_WELCOME =
+  "Hey Alex! I'm your AdvI study agent for **Lecture 4: Functions**. " +
+  "*(Running in offline demo mode — responses are pre-written)* \n\n" +
+  "Let's review what you learned. First question: In your own words, what is " +
+  "the **purpose of a function** in C++?";
+
+const OFFLINE_PRESET = [
+  "Nice! Functions let us break programs into reusable, named chunks — " +
+  "great for avoiding repetition. Next question:\n\n" +
+  "What's the difference between **pass-by-value** and **pass-by-reference**?",
+
+  "Exactly right. Pass-by-value copies the argument (original unchanged), " +
+  "pass-by-reference gives direct access to the original variable via `&`. " +
+  "One more:\n\n" +
+  "What does a **function prototype** do and why do we need one?",
+
+  "Great work! Prototypes declare a function's signature before its definition, " +
+  "letting the compiler know what to expect — essential for multi-file projects. " +
+  "You've finished all the preset questions! 🎉 Feel free to ask me anything else " +
+  "about functions.",
+];
+
+const OFFLINE_FREEFORM = [
+  "That's a great question! In C++, scope determines where a variable is " +
+  "accessible. Variables declared inside a function are **local** and disappear " +
+  "when the function returns. Anything else you'd like to explore?",
+  "Good thinking! Recursion is when a function calls itself. The key is always " +
+  "having a **base case** to stop the recursion, otherwise you get a stack overflow. " +
+  "Want to go deeper on any topic?",
+  "In C++, `void` means the function returns nothing. If a non-void function " +
+  "falls off the end without a `return`, the behavior is undefined — always " +
+  "include a return value! Any other questions?",
+];
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function App() {
   const [messages, setMessages] = useState([]);
@@ -18,12 +54,20 @@ export default function App() {
   const [answeredCount, setAnsweredCount] = useState(2);
   const [sessionReady, setSessionReady] = useState(false);
   const [backendDown, setBackendDown] = useState(false);
+  const [chatExpanded, setChatExpanded] = useState(false);
+
+  const offlinePresetIdx = useRef(0);
+  const offlineFreeformIdx = useRef(0);
+  const isOffline = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const seeded = await ensureSeeded();
-      if (!seeded) { setBackendDown(true); return; }
+      if (!seeded) {
+        if (!cancelled) startOfflineMode();
+        return;
+      }
       try {
         const res = await startSession(STUDENT_ID, LECTURE_ID);
         if (cancelled) return;
@@ -31,16 +75,44 @@ export default function App() {
         setPresetComplete(res.preset_complete);
         setSessionReady(true);
       } catch {
-        if (!cancelled) setBackendDown(true);
+        if (!cancelled) startOfflineMode();
       }
     })();
     return () => { cancelled = true; };
   }, []);
 
+  function startOfflineMode() {
+    isOffline.current = true;
+    setBackendDown(true);
+    setMessages([{ role: "ai", text: OFFLINE_WELCOME, time: now() }]);
+    setSessionReady(true);
+  }
+
   const handleSend = useCallback(
     async (text) => {
       setMessages((prev) => [...prev, { role: "student", text, time: now() }]);
       setLoading(true);
+
+      if (isOffline.current) {
+        // Simulate a short thinking delay
+        await delay(900 + Math.random() * 600);
+        let reply;
+        if (!presetComplete) {
+          const idx = offlinePresetIdx.current;
+          reply = OFFLINE_PRESET[idx] ?? OFFLINE_FREEFORM[0];
+          offlinePresetIdx.current = idx + 1;
+          setAnsweredCount((c) => c + 1);
+          if (idx + 1 >= OFFLINE_PRESET.length) setPresetComplete(true);
+        } else {
+          const idx = offlineFreeformIdx.current % OFFLINE_FREEFORM.length;
+          reply = OFFLINE_FREEFORM[idx];
+          offlineFreeformIdx.current = idx + 1;
+        }
+        setMessages((prev) => [...prev, { role: "ai", text: reply, time: now() }]);
+        setLoading(false);
+        return;
+      }
+
       try {
         const res = presetComplete
           ? await sendFreeform(STUDENT_ID, [LECTURE_ID], text)
@@ -66,49 +138,84 @@ export default function App() {
         <div className="flex items-center gap-5">
           <span className="text-umblue-300 text-[10px] tabular-nums">Feb 20, 2026</span>
           <div className="flex items-center gap-1.5 text-[10px] text-umblue-300">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            Online
+            <div className={`w-1.5 h-1.5 rounded-full ${backendDown ? "bg-yellow-400" : "bg-green-400 animate-pulse"}`} />
+            {backendDown ? "Offline demo" : "Online"}
           </div>
         </div>
       </div>
 
-      <Topbar answeredCount={answeredCount} presetComplete={presetComplete} />
+      <Topbar />
 
       {backendDown && (
-        <div className="mx-auto max-w-2xl mt-4 bg-red-50 border border-red-200 text-red-700 rounded-xl px-5 py-3 text-sm text-center">
-          <strong>Backend not reachable.</strong>{" "}
-          <code className="bg-red-100 px-2 py-0.5 rounded text-xs">
-            uvicorn app.main:app --reload --port 8000
-          </code>
+        <div className="mx-auto max-w-2xl mt-4 bg-maize-50 border border-maize-200 text-maize-800 rounded-xl px-5 py-3 text-sm text-center">
+          <strong>Running in offline demo mode.</strong>{" "}
+          Responses are pre-written.{" "}
+          <span className="text-umblue-400">
+            Start backend:{" "}
+            <code className="bg-white px-2 py-0.5 rounded text-xs border border-maize-200">
+              uvicorn app.main:app --reload --port 8000
+            </code>
+          </span>
         </div>
       )}
 
       <div className="px-6 pb-8">
-        <div className="grid grid-cols-12 gap-4">
+        <div className="flex gap-4">
           {/* Left sidebar */}
-          <div className="col-span-3 flex flex-col gap-4">
-            <LectureInfoCard />
-            <KeyConceptsCard />
-            <LectureTopicsCard />
-          </div>
+          <AnimatePresence initial={false}>
+            {!chatExpanded && (
+              <motion.div
+                key="left"
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: "25%", opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+                className="flex-shrink-0 overflow-hidden"
+              >
+                <div className="flex flex-col gap-4 pr-0">
+                  <LectureInfoCard />
+                  <KeyConceptsCard />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {/* Centered chat */}
-          <div className="col-span-6 flex justify-center">
-            <div className="w-full max-w-lg" style={{ height: "calc(100vh - 160px)" }}>
+          {/* Chat */}
+          <motion.div
+            layout
+            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+            className="flex-1 min-w-0 flex justify-center"
+          >
+            <div className={`w-full ${chatExpanded ? "" : "max-w-lg"}`} style={{ height: "calc(100vh - 160px)" }}>
               <ChatCard
                 messages={messages}
                 onSend={handleSend}
                 loading={loading}
                 disabled={!sessionReady}
                 presetComplete={presetComplete}
+                isExpanded={chatExpanded}
+                onToggleExpand={() => setChatExpanded((v) => !v)}
               />
             </div>
-          </div>
+          </motion.div>
 
           {/* Right sidebar */}
-          <div className="col-span-3 flex flex-col gap-4">
-            <ActivityCard answeredCount={answeredCount} presetComplete={presetComplete} />
-          </div>
+          <AnimatePresence initial={false}>
+            {!chatExpanded && (
+              <motion.div
+                key="right"
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: "25%", opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+                className="flex-shrink-0 overflow-hidden"
+              >
+                <div className="flex flex-col gap-4">
+                  <ActivityCard answeredCount={answeredCount} presetComplete={presetComplete} />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
@@ -117,4 +224,8 @@ export default function App() {
 
 function now() {
   return new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+function delay(ms) {
+  return new Promise((res) => setTimeout(res, ms));
 }

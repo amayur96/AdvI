@@ -16,7 +16,7 @@ function StudentAvatar() {
   );
 }
 
-export default function ChatCard({ messages, onSend, loading = false, disabled = false, presetComplete = false }) {
+export default function ChatCard({ messages, onSend, loading = false, disabled = false, presetComplete = false, isExpanded = false, onToggleExpand, lectureLabel = "Lecture 4 – Functions" }) {
   const [text, setText] = useState("");
   const scrollRef   = useRef(null);
   const textareaRef = useRef(null);
@@ -60,7 +60,7 @@ export default function ChatCard({ messages, onSend, loading = false, disabled =
       <div className="flex items-center justify-between px-5 py-3.5 border-b border-umblue-100">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <AiCompanion state={aiState} size="md" />
+            <AiCompanion state={aiState} size="md" isStatic />
             <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-maize-500 border-2 border-white rounded-full" />
           </div>
           <div>
@@ -68,17 +68,36 @@ export default function ChatCard({ messages, onSend, loading = false, disabled =
             <div className="text-[11px] text-umblue-400">
               {aiState === "thinking" && "Thinking…"}
               {aiState === "typing"   && "Responding…"}
-              {aiState === "idle"     && "Lecture 4 – Functions"}
+              {aiState === "idle"     && lectureLabel}
             </div>
           </div>
         </div>
-        <div className={`flex items-center gap-2 text-[11px] font-semibold px-3 py-1.5 rounded-full ${
-          presetComplete
-            ? "bg-umblue-50 text-umblue-500"
-            : "bg-maize-50 text-maize-700"
-        }`}>
-          <div className={`w-2 h-2 rounded-full ${presetComplete ? "bg-umblue-400" : "bg-maize-500"}`} />
-          {presetComplete ? "Free-form Mode" : "Preset Questions"}
+        <div className="flex items-center gap-2">
+          <div className={`flex items-center gap-2 text-[11px] font-semibold px-3 py-1.5 rounded-full ${
+            presetComplete
+              ? "bg-umblue-50 text-umblue-500"
+              : "bg-maize-50 text-maize-700"
+          }`}>
+            <div className={`w-2 h-2 rounded-full ${presetComplete ? "bg-umblue-400" : "bg-maize-500"}`} />
+            {presetComplete ? "Free-form Mode" : "Preset Questions"}
+          </div>
+          {onToggleExpand && (
+            <button
+              onClick={onToggleExpand}
+              title={isExpanded ? "Collapse chat" : "Expand chat"}
+              className="w-8 h-8 rounded-xl bg-white border border-umblue-100 flex items-center justify-center hover:bg-umblue-50 hover:border-umblue-200 transition-all flex-shrink-0"
+            >
+              {isExpanded ? (
+                <svg className="w-4 h-4 text-umblue-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4 text-umblue-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+                </svg>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
@@ -93,7 +112,7 @@ export default function ChatCard({ messages, onSend, loading = false, disabled =
             style={{ maxWidth: "82%", marginLeft: msg.role === "student" ? "auto" : undefined }}
           >
             {msg.role === "ai"
-              ? <AiCompanion state="idle" size="md" />
+              ? <AiCompanion state="idle" size="md" isStatic />
               : <StudentAvatar />
             }
 
