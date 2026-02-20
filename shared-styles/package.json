@@ -1,0 +1,19 @@
+{
+  "name": "@advi/shared-styles",
+  "version": "1.0.0",
+  "description": "Shared design tokens, Tailwind theme, and CSS for AdvI apps",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./tokens": "./tokens.js",
+    "./tailwind-preset": "./tailwind-preset.js",
+    "./base.css": "./base.css",
+    "./animations.css": "./animations.css",
+    "./variables.css": "./variables.css",
+    "./tailwind-theme.css": "./tailwind-theme.css"
+  },
+  "files": [
+    "*.js",
+    "*.css"
+  ]
+}

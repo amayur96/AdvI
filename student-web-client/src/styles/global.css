@@ -1,0 +1,25 @@
+@import "tailwindcss";
+@import "@advi/shared-styles/tailwind-theme.css";
+@import "@advi/shared-styles/animations.css";
+
+@layer base {
+  body {
+    @apply font-sans bg-umblue-50 text-umblue-700 antialiased;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+}
+
+/* Chat scrollbar (student-specific) */
+.chat-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.chat-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chat-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}

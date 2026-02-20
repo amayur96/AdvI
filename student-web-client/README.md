@@ -1,6 +1,6 @@
-# EduAI – Student AI Agent
+# AdvI – Student AI Agent
 
-Student-facing chat interface for the EduAI platform (2026 AI Hackathon – "The Future of Education"). An interactive AI study agent that guides students through preset comprehension questions and free-form lecture exploration.
+Student-facing bento dashboard for the AdvI platform (2026 AI Hackathon – "The Future of Education"). An interactive AI study agent with a card-based dashboard UI inspired by modern fintech design, built with React, Vite, and Tailwind CSS in maize and blue.
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ npm install
 npm run dev
 ```
 
-The app will be available at **http://localhost:5174** (or the next available port).
+The app will be available at **http://localhost:5173** (or the next available port).
 
 ## Production Build
 
@@ -24,20 +24,31 @@ npm run build
 npm run preview
 ```
 
+## Tech Stack
+
+- **React 19** via Vite
+- **Tailwind CSS v4** with custom maize/blue theme
+- No external component libraries — fully custom UI
+
 ## Project Structure
 
 ```
 src/
 ├── components/
-│   ├── WireframeBanner       – Hackathon header banner
-│   ├── LeftPanel             – Student profile, preset question progress, lecture topics
-│   ├── ChatHeader            – AI agent header with mode indicator
-│   ├── ChatMessages          – Scrollable message thread with typing indicator
-│   ├── ChatInput             – Text input with Enter-to-send
-│   └── RightPanel            – Lecture context, key concepts, confidence, session stats
+│   ├── Topbar.jsx               – Brand, search, avatar (top bar)
+│   ├── HeroRow.jsx              – Date, CTA button, greeting
+│   ├── ChatCard.jsx             – Main AI chat (messages, input, typing)
+│   ├── PresetProgressCard.jsx   – Circular progress + question checklist
+│   ├── SessionStatsCard.jsx     – Message count, duration, grade
+│   ├── ConfidenceCard.jsx       – Dark card with ring + per-concept bars
+│   ├── KeyConceptsCard.jsx      – Concept list with status badges
+│   ├── LectureInfoCard.jsx      – Current lecture context
+│   ├── LectureTopicsCard.jsx    – Free-form lecture picker + trend chart
+│   └── ActivityCard.jsx         – Timeline of question completions
 ├── data/
-│   └── mockData.js           – Centralized mock data (swap for API later)
-├── App.jsx                   – Root layout and chat state management
-├── index.css                 – CSS variables and global reset
-└── main.jsx                  – React entry point
+│   └── mockData.js              – Centralized mock data (swap for API later)
+├── styles/
+│   └── global.css               – Tailwind directives + custom animations
+├── App.jsx                      – Bento grid layout + chat state
+└── main.jsx                     – React entry point
 ```

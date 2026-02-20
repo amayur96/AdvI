@@ -1,0 +1,45 @@
+/*
+ * AdvI Base Styles
+ * Reset + typography foundation shared across all apps.
+ * Use via:  @import "@advi/shared-styles/base.css";
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* Shared scrollbar styling */
+.advi-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.advi-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.advi-scroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}

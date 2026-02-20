@@ -1,0 +1,9 @@
+{
+  "name": "advi",
+  "private": true,
+  "workspaces": [
+    "shared-styles",
+    "faculty-web-client",
+    "student-web-client"
+  ]
+}
