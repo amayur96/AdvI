@@ -19,6 +19,63 @@ export const lectureTopics = [
   { id: 6, label: "Lec 6 – Pointers & References" },
 ];
 
+export const lectures = [
+  {
+    id: 1,
+    num: "Lecture 1",
+    title: "Intro to C++",
+    description: "Basic program structure, compilation, I/O with cin/cout, and common data types.",
+    materials: 3,
+    concepts: 4,
+    mastery: 95,
+  },
+  {
+    id: 2,
+    num: "Lecture 2",
+    title: "Variables & Data Types",
+    description: "int, double, string, bool, type conversion, constants, and naming conventions.",
+    materials: 4,
+    concepts: 5,
+    mastery: 88,
+  },
+  {
+    id: 3,
+    num: "Lecture 3",
+    title: "Control Flow",
+    description: "if/else, switch statements, ternary operator, and nested conditionals.",
+    materials: 3,
+    concepts: 5,
+    mastery: 72,
+  },
+  {
+    id: 4,
+    num: "Lecture 4",
+    title: "Functions",
+    description: "Pass-by-value vs pass-by-reference, for/while loops, header files, function prototypes, scope & lifetime, and default arguments.",
+    materials: 4,
+    concepts: 6,
+    mastery: 45,
+  },
+  {
+    id: 5,
+    num: "Lecture 5",
+    title: "Arrays & Strings",
+    description: "Arrays, C-strings, std::string, array traversal, and basic string manipulation.",
+    materials: 4,
+    concepts: 5,
+    mastery: 0,
+  },
+  {
+    id: 6,
+    num: "Lecture 6",
+    title: "Pointers & References",
+    description: "Memory addresses, pointer arithmetic, dynamic memory allocation, and references.",
+    materials: 5,
+    concepts: 6,
+    mastery: 0,
+  },
+];
+
 export const keyConcepts = [
   { label: "Variables & Types", status: "strong" },
   { label: "Control Flow", status: "strong" },

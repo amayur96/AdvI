@@ -108,7 +108,6 @@ export const questionResponses = [
 ];
 
 export const dashboardStats = [
-  { label: "Active Students", value: "142", change: "+8% from last lecture", up: true },
   { label: "Avg. Comprehension", value: "61%", change: "+5% from last lecture", up: true },
   { label: "AI Conversations", value: "287", change: "+18% from last lecture", up: true },
   { label: "Questions Completed", value: "76%", change: "+12% from last lecture", up: true },

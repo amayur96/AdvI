@@ -1,61 +1,67 @@
 /**
- * AiCompanion — AdvI's animated AI character (image-based)
+ * AiCompanion — animated character images
  *
- * state : 'idle' | 'thinking' | 'typing'
- * size  : 'sm' (32px) | 'md' (40px) | 'lg' (56px)
+ * Auto-picks the right image based on state + isStatic.
+ * Pass `src` explicitly to override (e.g. faculty character).
+ *
+ * isStatic=true  → ai-companion.png,         no animation
+ * state=thinking → ai-companion-thinking.png, bob animation
+ * state=idle     → ai-companion-sleeping.png, slow breathe
+ *
+ * size     : 'sm' (32px) | 'md' (40px) | 'lg' (56px)
+ * isStatic : true → completely frozen (navbars, past messages)
  */
+
+import { motion } from "motion/react";
+
 const SIZES = { sm: 32, md: 40, lg: 56 };
 
-export default function AiCompanion({ state = "idle", size = "md", className = "" }) {
-  const px    = SIZES[size] ?? SIZES.md;
-  const idle  = state === "idle";
-  const think = state === "thinking";
+const ANIM = {
+  idle: {
+    animate:    { y: [0, -3, 0] },
+    transition: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+  },
+  thinking: {
+    animate:    { y: [0, -6, 0] },
+    transition: { duration: 0.9, repeat: Infinity, ease: "easeInOut" },
+  },
+  typing: {
+    animate:    { x: [-2, 2, -2] },
+    transition: { duration: 0.4, repeat: Infinity, ease: "easeInOut" },
+  },
+};
 
-  const wrapAnim = "none";
+function autoSrc(state, isStatic) {
+  if (isStatic)              return "/assets/ai-companion.png";
+  if (state === "thinking")  return "/assets/ai-companion-thinking.png";
+  return "/assets/ai-companion-sleeping.png";
+}
 
-  const ringAnim = think ? "companion-ring-spin 2s linear infinite"
-                 : "none";
-
-  const ringColor = think ? "border-maize-400"
-                  : state === "typing" ? "border-maize-300"
-                  : "border-transparent";
+export default function AiCompanion({
+  state     = "idle",
+  size      = "md",
+  className = "",
+  isStatic  = false,
+  src,
+}) {
+  const px     = SIZES[size] ?? SIZES.md;
+  const imgSrc = src ?? autoSrc(state, isStatic);
+  const a      = ANIM[state] ?? ANIM.idle;
 
   return (
     <div
-      className={`companion-root inline-block flex-shrink-0 relative ${className}`}
-      style={{ width: px, height: px, animation: wrapAnim }}
+      className={`companion-root inline-block flex-shrink-0 ${className}`}
+      style={{ width: px, height: px }}
       aria-hidden="true"
     >
-      {/* Glow ring behind avatar */}
-      <div
-        className={`absolute inset-[-3px] rounded-full border-2 ${ringColor}`}
-        style={{
-          animation: ringAnim,
-          borderStyle: think ? "dashed" : "solid",
-          opacity: think ? 0.8 : state === "typing" ? 0.5 : 0,
-          transition: "opacity 0.3s ease",
-        }}
-      />
-
-      {/* Thinking orbiting dots */}
-      {think && (
-        <div
-          className="absolute inset-[-6px] rounded-full"
-          style={{ animation: "companion-ring-spin 1.5s linear infinite" }}
-        >
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-maize-400 shadow-sm" />
-        </div>
-      )}
-
-      <img
-        src="/assets/faculty-companion.png"
-        alt=""
-        className="w-full h-full rounded-full object-cover"
+      <motion.img
+        src={imgSrc}
+        width={px}
+        height={px}
+        style={{ display: "block", borderRadius: "50%", objectFit: "cover" }}
+        animate={isStatic ? {} : a.animate}
+        transition={isStatic ? {} : a.transition}
         draggable={false}
-        style={{
-          filter: think ? "brightness(1.05)" : state === "typing" ? "brightness(1.02)" : "none",
-          transition: "filter 0.3s ease",
-        }}
       />
     </div>
   );

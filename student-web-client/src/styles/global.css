@@ -13,17 +13,33 @@
 }
 
 /* ── AI Companion character animations ─────────────────────────────── */
-@keyframes companion-float {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-4px); }
+@keyframes companion-squish {
+  0%, 100% { transform: scale(1, 1); }
+  22%       { transform: scale(1.09, 0.91); }
+  55%       { transform: scale(0.94, 1.07); }
+  78%       { transform: scale(1.04, 0.96); }
 }
 @keyframes companion-think-bob {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-2px); }
+  0%, 100% { transform: translateY(0px) scale(1, 1); }
+  40%       { transform: translateY(-5px) scale(0.95, 1.06); }
+  60%       { transform: translateY(-4px) scale(1.04, 0.96); }
 }
-@keyframes companion-ring-spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+@keyframes companion-type-jiggle {
+  0%, 100% { transform: translateX(0px) rotate(0deg); }
+  25%       { transform: translateX(-2px) rotate(-2.5deg); }
+  75%       { transform: translateX(2px)  rotate(2.5deg); }
+}
+@keyframes companion-glow-idle {
+  0%, 100% { opacity: 0.12; }
+  50%       { opacity: 0.32; }
+}
+@keyframes companion-glow-think {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
+}
+@keyframes companion-glow-type {
+  0%, 100% { opacity: 0.28; }
+  50%       { opacity: 0.6; }
 }
 @media (prefers-reduced-motion: reduce) {
   .companion-root, .companion-root * {

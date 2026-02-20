@@ -5,7 +5,7 @@ export default function Topbar() {
     <header className="relative flex items-center justify-between px-8 py-4 bg-white border-b border-umblue-100">
       {/* Brand + companion */}
       <div className="flex items-center gap-4">
-        <AiCompanion state="idle" size="lg" />
+        <AiCompanion state="idle" size="lg" isStatic src="/assets/faculty-companion.png" />
         <div>
           <div className="flex items-baseline gap-0.5">
             <span className="text-xl font-extrabold text-umblue-700 tracking-tight">AdvI</span>

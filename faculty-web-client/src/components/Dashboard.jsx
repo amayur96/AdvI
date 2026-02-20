@@ -21,7 +21,7 @@ function TrendIcon({ up }) {
 
 function StatsRow() {
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-3 gap-4">
       {dashboardStats.map((s, i) => (
         <div key={i} className="bg-white rounded-2xl border border-umblue-100 shadow-sm p-5">
           <div className="text-xs font-semibold uppercase tracking-wider text-umblue-400 mb-1">
