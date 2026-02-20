@@ -49,6 +49,8 @@ class SessionResponse(BaseModel):
     reply: str
     preset_question: PresetQuestion | None = None
     preset_complete: bool = False
+    answered_count: int = 0  # Number of preset questions already answered
+    total_questions: int = 0  # Total number of preset questions
     conversation: list[ChatMessage] = []
 
 

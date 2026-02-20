@@ -42,3 +42,11 @@ export async function generateQuestions(lectureId, count = 3) {
 export async function getLectures() {
   return get("/faculty/lectures");
 }
+
+export async function getAnalytics(lectureId) {
+  return get(`/faculty/analytics/${lectureId}`);
+}
+
+export async function getInsights(lectureId) {
+  return get(`/faculty/insights/${lectureId}`);
+}

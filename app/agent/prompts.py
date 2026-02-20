@@ -14,10 +14,14 @@ RULES:
 3. Do NOT give the full answer outright. Guide the student toward it.
 4. Once all preset questions are complete, inform the student they can now ask \
    about any lecture topic in free-form mode.
-5. In free-form mode, ground every answer in the lecture content provided. \
-   If the lecture material does not cover a topic, say so honestly.
+5. In free-form mode, prioritize grounding answers in the lecture content when \
+   relevant. However, if a student asks about a related topic that isn't explicitly \
+   covered in the lecture materials, you should still be helpful and provide a \
+   thoughtful answer. Connect it to concepts from the lecture when possible, but \
+   don't refuse to help just because the topic isn't in the materials.
 6. Keep responses concise (2-4 short paragraphs max).
-7. Never fabricate citations or facts not in the lecture content.
+7. When lecture content is available, reference it. When it's not, provide helpful \
+   explanations based on standard course knowledge appropriate for the student's level.
 """
 
 AGENT_LECTURE_CONTEXT_TEMPLATE = """\
@@ -46,7 +50,9 @@ conversation histories below, produce a JSON array of insights. Each insight has
 - "concept": the topic/concept name
 - "struggling_pct": estimated percentage (0-100) of students struggling
 - "summary": 1-2 sentence summary of how students are struggling
-- "recommendation": a concrete suggestion for the instructor
+- "recommendation": a concrete, actionable suggestion for improving the lecture materials. \
+Focus on specific changes the instructor can make to their slides, examples, explanations, \
+or structure. Be specific about what to add, clarify, or reorganize.
 
 Focus on the concepts where students show the most confusion or error patterns.
 Return ONLY valid JSON — no markdown fences, no commentary.

@@ -1,9 +1,8 @@
-import { student, presetQuestions } from "../data/mockData";
+import { student } from "../data/mockData";
 import AiCompanion from "./AiCompanion";
 
-export default function Topbar({ answeredCount = 0, presetComplete = false }) {
-  const total = presetQuestions.length;
-  const remaining = total - answeredCount;
+export default function Topbar({ answeredCount = 0, totalQuestions = 3, presetComplete = false }) {
+  const remaining = totalQuestions - answeredCount;
   return (
     <header className="relative flex items-center justify-between px-8 py-4">
       {/* Brand + companion */}
@@ -38,7 +37,7 @@ export default function Topbar({ answeredCount = 0, presetComplete = false }) {
         {/* Question streak badge */}
         <div className="hidden lg:flex items-center gap-2.5 bg-gradient-to-r from-umblue-700 to-umblue-600 rounded-2xl px-4 py-2 shadow-sm">
           <div className="flex -space-x-0.5">
-            {Array.from({ length: total }, (_, i) => {
+            {Array.from({ length: totalQuestions }, (_, i) => {
               const done = i < answeredCount;
               const active = i === answeredCount && !presetComplete;
               return done ? (

@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { lectures } from "./data/mockData";
+import { getAnalytics } from "./services/api";
 import LectureSidebar from "./components/LectureSidebar";
 import Topbar from "./components/Topbar";
 import CriticalInfo from "./components/CriticalInfo";
@@ -8,16 +9,56 @@ import Dashboard from "./components/Dashboard";
 import ConceptMastery from "./components/ConceptMastery";
 import MaterialsCard from "./components/MaterialsCard";
 import DiveDeepModal from "./components/DiveDeepModal";
+import AiInsights from "./components/AiInsights";
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentLecture, setCurrentLecture] = useState(4);
   const [modal, setModal] = useState({ open: false, conceptId: null, conceptName: "", pct: 0 });
+  const [analytics, setAnalytics] = useState({
+    concept_mastery: [],
+    critical_concepts: [],
+    question_responses: [],
+    total_students: 0,
+    ai_insights: [],
+  });
 
   const lecture = lectures.find((l) => l.id === currentLecture);
   const lectureName = `Lecture ${currentLecture}`;
   const lectureTitle = lecture?.title ?? "";
   const lectureId = `lec${currentLecture}`;
+
+  // Fetch analytics data
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const data = await getAnalytics(lectureId);
+        // Always use backend data, even if empty
+        setAnalytics({
+          concept_mastery: data.concept_mastery || [],
+          critical_concepts: data.critical_concepts || [],
+          question_responses: data.question_responses || [],
+          total_students: data.total_students || 0,
+          ai_insights: data.ai_insights || [],
+        });
+      } catch (err) {
+        console.error("Failed to fetch analytics:", err);
+        // Reset to empty state on error (don't use old data)
+        setAnalytics({
+          concept_mastery: [],
+          critical_concepts: [],
+          question_responses: [],
+          total_students: 0,
+          ai_insights: [],
+        });
+      }
+    };
+
+    fetchAnalytics();
+    // Poll every 5 seconds for updates
+    const interval = setInterval(fetchAnalytics, 5000);
+    return () => clearInterval(interval);
+  }, [lectureId]);
 
   function handleSelectLecture(id) {
     setCurrentLecture(id);
@@ -60,7 +101,10 @@ export default function App() {
 
           {/* Row 2: Critical Info (left) | Suggested Questions (right) */}
           <div className="col-span-6">
-            <CriticalInfo onDiveDeep={handleDiveDeep} />
+            <CriticalInfo 
+              criticalConcepts={analytics.critical_concepts || []} 
+              onDiveDeep={handleDiveDeep} 
+            />
           </div>
           <div className="col-span-6">
             <SuggestedQuestions lectureId={lectureId} />
@@ -68,10 +112,19 @@ export default function App() {
 
           {/* Row 3: Concept Mastery (left) | Course Materials (right) */}
           <div className="col-span-6">
-            <ConceptMastery />
+            <ConceptMastery 
+              conceptMastery={analytics.concept_mastery || []}
+              questionResponses={analytics.question_responses || []}
+              totalStudents={analytics.total_students || 0}
+            />
           </div>
           <div className="col-span-6">
             <MaterialsCard />
+          </div>
+
+          {/* Row 4: AI Insights */}
+          <div className="col-span-8 col-start-3">
+            <AiInsights insights={analytics.ai_insights || []} />
           </div>
 
         </div>

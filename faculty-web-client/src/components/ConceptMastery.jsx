@@ -1,4 +1,4 @@
-import { conceptMastery, questionResponses } from "../data/mockData";
+import { conceptMastery as defaultConceptMastery, questionResponses as defaultQuestionResponses } from "../data/mockData";
 
 const masteryColor = (pct) => {
   if (pct >= 80) return { bar: "#10b981", text: "#059669" };   // green
@@ -7,7 +7,19 @@ const masteryColor = (pct) => {
   return { bar: "#b91c1c", text: "#991b1b" };                  // deep red
 };
 
-export default function ConceptMastery() {
+export default function ConceptMastery({ 
+  conceptMastery = null, 
+  questionResponses = null, 
+  totalStudents = 0 
+}) {
+  // Use real data if available, otherwise fall back to mock data
+  const mastery = conceptMastery && conceptMastery.length > 0 
+    ? conceptMastery 
+    : defaultConceptMastery;
+  const responses = questionResponses && questionResponses.length > 0
+    ? questionResponses
+    : defaultQuestionResponses;
+  const studentCount = totalStudents > 0 ? totalStudents : 142;
   return (
     <div className="bg-white rounded-2xl border border-umblue-100 shadow-sm p-5 h-full flex flex-col" style={{ minHeight: "500px" }}>
       {/* Concept Mastery Section */}
@@ -19,7 +31,7 @@ export default function ConceptMastery() {
           <span className="text-xs text-umblue-400 font-medium">Lecture 4</span>
         </div>
         <div className="flex flex-col gap-2.5">
-          {conceptMastery.map((c, i) => {
+          {mastery.map((c, i) => {
             const col = masteryColor(c.pct);
             return (
               <div key={i}>
@@ -48,10 +60,10 @@ export default function ConceptMastery() {
           <div className="text-xs font-semibold uppercase tracking-wider text-umblue-400">
             Student Responses
           </div>
-          <span className="text-xs text-umblue-400 font-medium">142 students</span>
+          <span className="text-xs text-umblue-400 font-medium">{studentCount} students</span>
         </div>
         <div className="flex flex-col gap-2">
-          {questionResponses.map((r, i) => (
+          {responses.map((r, i) => (
             <div key={i} className="flex items-center gap-2">
               <span className="text-xs font-bold text-umblue-400 w-5 flex-shrink-0">{r.label}</span>
               <div className="flex-1 flex h-2 rounded-full overflow-hidden gap-px">

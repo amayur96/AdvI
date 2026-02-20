@@ -14,6 +14,10 @@ from app.models import (
     StudentRecord,
 )
 from app.db.store import faculty_db, student_db
+from app.config import USE_POSTGRES
+
+if USE_POSTGRES:
+    from app.db.models import create_tables
 
 
 # Hardcoded lecture materials for EECS 183
@@ -163,6 +167,10 @@ STUDENT_RESPONSES = {
 
 def seed_databases() -> None:
     """Initialize both databases with hardcoded demo data."""
+    # Create tables if using PostgreSQL
+    if USE_POSTGRES:
+        create_tables()
+    
     # Seed FacultyDB with lectures
     for lecture_data in LECTURES:
         lecture = LectureMaterial(
@@ -174,11 +182,31 @@ def seed_databases() -> None:
 
     # Seed StudentDB with preset questions for Lecture 4
     student_db.set_preset_questions("lec4", PRESET_QUESTIONS_LEC4)
-
-    # Seed student "alex" with pre-answered questions (2 out of 3)
-    student_record = student_db.get_student("alex")
-    student_record.name = "Alex Johnson"
-    student_record.preset_responses = STUDENT_RESPONSES.copy()
+    
+    # Get the actual questions that were saved (they may have different IDs if saved via faculty UI)
+    saved_questions = student_db.get_preset_questions("lec4")
+    
+    # Seed student "alex" with pre-answered questions (2 out of 3) for demo
+    if not USE_POSTGRES:
+        student_record = student_db.get_student("alex")
+        student_record.name = "Alex Johnson"
+        # Map responses to actual question IDs
+        responses_dict = {}
+        for i, q_id in enumerate(["q1", "q2"]):
+            if i < len(saved_questions):
+                responses_dict[saved_questions[i].id] = STUDENT_RESPONSES[q_id]
+        student_record.preset_responses = responses_dict
+    else:
+        # For PostgreSQL, save preset responses using actual question IDs
+        from app.db.postgres_store import StudentDBPostgres
+        if isinstance(student_db, StudentDBPostgres):
+            # Pre-answer first 2 questions if they exist
+            for i in range(min(2, len(saved_questions))):
+                q_id = saved_questions[i].id
+                # Map to response by index (q1 -> first question, q2 -> second question)
+                response_key = f"q{i+1}"
+                if response_key in STUDENT_RESPONSES:
+                    student_db.save_preset_response("alex", q_id, STUDENT_RESPONSES[response_key])
 
     print("✅ Databases seeded successfully!")
     print(f"   - {len(LECTURES)} lectures added to FacultyDB")

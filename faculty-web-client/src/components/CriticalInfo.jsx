@@ -1,4 +1,4 @@
-import { criticalConcepts } from "../data/mockData";
+// Removed mock data import - always use backend data
 
 const severityStyles = {
   700: { bar: "bg-red-700", badge: "bg-red-50 text-red-700", dot: "bg-red-700" },
@@ -7,7 +7,10 @@ const severityStyles = {
   300: { bar: "bg-amber-400", badge: "bg-amber-50 text-amber-600", dot: "bg-amber-400" },
 };
 
-export default function CriticalInfo({ onDiveDeep }) {
+export default function CriticalInfo({ criticalConcepts = null, onDiveDeep }) {
+  // Use real data from backend - never fall back to mock data
+  // If backend returns empty array, show empty state instead of mock data
+  const concepts = criticalConcepts || [];
   return (
     <div className="bg-white rounded-2xl border border-umblue-100 shadow-sm p-4 h-full flex flex-col" style={{ minHeight: "500px" }}>
       {/* Header */}
@@ -21,13 +24,18 @@ export default function CriticalInfo({ onDiveDeep }) {
           </div>
         </div>
         <span className="text-[10px] bg-red-50 text-red-600 font-semibold px-2 py-0.5 rounded-full">
-          {criticalConcepts.length}
+          {concepts.length}
         </span>
       </div>
 
       {/* Cards grid - 2x2 layout */}
-      <div className="grid grid-cols-2 gap-2 flex-1">
-        {criticalConcepts.map((c) => {
+      {concepts.length === 0 ? (
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-sm text-umblue-400">No critical concepts yet</p>
+        </div>
+      ) : (
+        <div className={`grid gap-2 flex-1 grid-cols-2`}>
+          {concepts.slice(0, 4).map((c) => {
           const s = severityStyles[c.severity] ?? severityStyles[400];
           return (
             <div
@@ -74,7 +82,8 @@ export default function CriticalInfo({ onDiveDeep }) {
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

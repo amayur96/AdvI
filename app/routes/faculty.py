@@ -94,3 +94,10 @@ async def submit_questions(req: SubmitQuestionsRequest):
     ]
     student_db.set_preset_questions(req.lecture_id, questions)
     return {"status": "ok", "lecture_id": req.lecture_id, "count": len(questions)}
+
+
+@router.get("/analytics/{lecture_id}")
+async def get_analytics(lecture_id: str):
+    """Get analytics data for a lecture: concept mastery, critical concepts, and response distributions."""
+    from app.analytics import get_lecture_responses
+    return await get_lecture_responses(lecture_id)

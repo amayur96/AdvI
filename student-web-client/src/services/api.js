@@ -70,3 +70,11 @@ export async function generateQuestions(lectureId, count = 3) {
 export async function getLectures() {
   return get("/faculty/lectures");
 }
+
+export async function getPresetQuestions(lectureId) {
+  return get(`/student/preset-questions/${lectureId}`);
+}
+
+export async function getCurrentQuestion(studentId, lectureId) {
+  return get(`/student/session/current?student_id=${studentId}&lecture_id=${lectureId}`);
+}

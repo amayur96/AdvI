@@ -68,6 +68,31 @@ class ChatAgent:
         self._lectures = [lecture] if lecture else []
         self._system_msgs = _build_system_messages(self._lectures)
 
+    def _refresh_preset_questions(self) -> tuple[bool, int]:
+        """
+        Refresh preset questions from DB to catch updates.
+        Returns (changed, old_count) where changed is True if questions were added/removed.
+        """
+        old_count = len(self._preset_questions)
+        old_questions = {q.id for q in self._preset_questions}
+        self._preset_questions = student_db.get_preset_questions(self.lecture_id)
+        new_questions = {q.id for q in self._preset_questions}
+        new_count = len(self._preset_questions)
+        
+        changed = old_questions != new_questions or old_count != new_count
+        
+        # Always recompute starting index to ensure it's correct
+        old_index = self._preset_index
+        self._preset_index = self._compute_starting_index()
+        
+        # Ensure index is within bounds
+        if self._preset_index > len(self._preset_questions):
+            self._preset_index = len(self._preset_questions)
+        elif self._preset_index < 0:
+            self._preset_index = 0
+        
+        return changed, old_count
+
     # --- Public API ---
 
     async def start_session(self) -> tuple[str, PresetQuestion | None, bool]:
@@ -75,6 +100,7 @@ class ChatAgent:
         Initialize a session. Returns the greeting + the first unanswered
         preset question (if any).
         """
+        self._refresh_preset_questions()  # Returns (changed, old_count) but we ignore it on start
         if not self._preset_questions:
             greeting = (
                 "Hey! It looks like there are no preset questions for this "
@@ -104,6 +130,8 @@ class ChatAgent:
         """
         Process a student message. Returns (reply, next_question_or_none, preset_complete).
         """
+        # Refresh questions before handling to catch any updates
+        questions_changed, old_count = self._refresh_preset_questions()
         self._record("user", user_message)
 
         in_preset = self._preset_index < len(self._preset_questions)
@@ -112,6 +140,14 @@ class ChatAgent:
             reply = await self._handle_preset_answer(user_message)
         else:
             reply = await self._handle_freeform(user_message)
+
+        # If questions changed, add a note to inform the student and update the count
+        if questions_changed:
+            new_count = len(self._preset_questions)
+            if new_count > old_count:
+                reply = f"📝 *Note: {new_count - old_count} new question(s) have been added. There are now {new_count} total questions.*\n\n{reply}"
+            elif new_count < old_count:
+                reply = f"📝 *Note: The question set has been updated ({old_count} → {new_count} questions).*\n\n{reply}"
 
         self._record("assistant", reply)
 
@@ -123,7 +159,16 @@ class ChatAgent:
             reply += transition
 
         if in_preset and not preset_complete:
-            next_q = self._preset_questions[self._preset_index]
+            if self._preset_index < len(self._preset_questions):
+                next_q = self._preset_questions[self._preset_index]
+                # Update the question numbering to reflect current total
+                current_q_num = self._preset_index + 1
+                total_q = len(self._preset_questions)
+                reply += f"\n\n**Question {current_q_num} of {total_q}:**\n{next_q.question}"
+            else:
+                # Index out of bounds - mark as complete
+                preset_complete = True
+                reply += f"\n\n{AGENT_PRESET_TRANSITION}"
 
         return reply, next_q, preset_complete
 
@@ -145,6 +190,22 @@ class ChatAgent:
         reply = await self._call_openai(system_msgs)
         self._record("assistant", reply)
         return reply
+
+    def get_current_state(self) -> tuple[PresetQuestion | None, bool, int, int]:
+        """
+        Get the current question state without processing a message.
+        Returns (current_question, preset_complete, answered_count, total_questions).
+        """
+        # Refresh questions to get latest state
+        self._refresh_preset_questions()
+        
+        preset_complete = self._preset_index >= len(self._preset_questions)
+        current_q = None
+        
+        if not preset_complete and self._preset_index < len(self._preset_questions):
+            current_q = self._preset_questions[self._preset_index]
+        
+        return current_q, preset_complete, self._preset_index, len(self._preset_questions)
 
     def get_session_messages(self) -> list[ChatMessage]:
         return list(self._session_messages)

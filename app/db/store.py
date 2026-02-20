@@ -1,16 +1,20 @@
 """
-In-memory stores for Student DB and Faculty DB.
-Replace with a real database (Postgres, Mongo, etc.) in production.
+Database stores for Student DB and Faculty DB.
+Automatically uses PostgreSQL if configured, otherwise falls back to in-memory storage.
 """
 
 from __future__ import annotations
 
+from app.config import USE_POSTGRES
 from app.models import (
     ChatMessage,
     PresetQuestion,
     StudentRecord,
     LectureMaterial,
 )
+
+if USE_POSTGRES:
+    from app.db.postgres_store import StudentDBPostgres, FacultyDBPostgres
 
 
 class StudentDB:
@@ -77,6 +81,10 @@ class FacultyDB:
         return list(self._lectures.values())
 
 
-# Singleton instances
-student_db = StudentDB()
-faculty_db = FacultyDB()
+# Singleton instances - use PostgreSQL if configured, otherwise in-memory
+if USE_POSTGRES:
+    student_db = StudentDBPostgres()
+    faculty_db = FacultyDBPostgres()
+else:
+    student_db = StudentDB()
+    faculty_db = FacultyDB()
