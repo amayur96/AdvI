@@ -14,7 +14,7 @@ export default function KeyConceptsCard() {
           Key Concepts
         </h3>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-semibold text-umblue-400">Lecture 10</span>
+          <span className="text-[10px] font-semibold text-umblue-400">Lecture 4</span>
         </div>
       </div>
 

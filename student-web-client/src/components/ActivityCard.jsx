@@ -1,10 +1,10 @@
 export default function ActivityCard() {
+  const total = 3;
+  const answered = 2;
   const activities = [
-    { label: "Completed Q1", time: "2:34 PM", type: "success" },
-    { label: "Completed Q2", time: "2:38 PM", type: "success" },
-    { label: "Answering Q3...", time: "2:39 PM", type: "active" },
-    { label: "Q4 – Pending", time: "—", type: "pending" },
-    { label: "Q5 – Pending", time: "—", type: "pending" },
+    { label: "Pass-by-value vs Pass-by-reference", time: "2:34 PM", type: "success" },
+    { label: "For loops vs While loops", time: "2:38 PM", type: "success" },
+    { label: "Header files & .cpp files", time: "2:39 PM", type: "active" },
   ];
 
   const dotStyles = {
@@ -21,6 +21,20 @@ export default function ActivityCard() {
         </h3>
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-maize-50 text-maize-700">Today</span>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-[11px] font-semibold text-umblue-600">{answered}/{total} Questions</span>
+          <span className="text-[10px] text-umblue-400">{Math.round((answered / total) * 100)}%</span>
+        </div>
+        <div className="h-2 bg-umblue-50 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-maize-400 to-maize-500 rounded-full transition-all"
+            style={{ width: `${(answered / total) * 100}%` }}
+          />
         </div>
       </div>
 

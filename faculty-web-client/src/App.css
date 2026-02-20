@@ -1,5 +1,1 @@
-.main-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 28px 32px 60px;
-}
+/* App-level styles — component styles now use Tailwind */

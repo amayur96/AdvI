@@ -9,7 +9,7 @@ import ActivityCard from "./components/ActivityCard";
 import LectureTopicsCard from "./components/LectureTopicsCard";
 
 const STUDENT_ID = "alex";
-const LECTURE_ID = "lec10";
+const LECTURE_ID = "lec4";
 
 export default function App() {
   const [messages, setMessages] = useState([]);
@@ -60,8 +60,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-umblue-50">
-      <div className="bg-gradient-to-r from-umblue-700 to-umblue-600 text-center py-2 text-[11px] font-semibold tracking-[0.2em] uppercase text-maize-300">
-        <span className="text-white">AdvI</span> &mdash; Student AI Agent &mdash; 2026 AI Hackathon
+      <div className="bg-umblue-700 py-1.5 px-8 flex items-center justify-end">
+        <div className="flex items-center gap-5">
+          <span className="text-umblue-300 text-[10px] tabular-nums">Feb 20, 2026</span>
+          <div className="flex items-center gap-1.5 text-[10px] text-umblue-300">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            Online
+          </div>
+        </div>
       </div>
 
       <Topbar />
@@ -92,6 +98,7 @@ export default function App() {
                 onSend={handleSend}
                 loading={loading}
                 disabled={!sessionReady}
+                presetComplete={presetComplete}
               />
             </div>
           </div>

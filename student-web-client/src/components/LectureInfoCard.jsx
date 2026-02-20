@@ -8,12 +8,12 @@ export default function LectureInfoCard() {
           </svg>
         </div>
         <div>
-          <h3 className="text-sm font-bold text-umblue-700">Lecture 10</h3>
-          <p className="text-xs text-umblue-400">Fine-Tuning LLMs</p>
+          <h3 className="text-sm font-bold text-umblue-700">Lecture 4</h3>
+          <p className="text-xs text-umblue-400">Functions</p>
         </div>
       </div>
       <p className="text-xs text-umblue-400 leading-relaxed">
-        Covers LoRA, full fine-tuning, catastrophic forgetting, hyperparameter selection, and data preparation for instruction-tuning.
+        Covers pass-by-value vs pass-by-reference, for/while loops, header files, function prototypes, scope & lifetime, and default arguments.
       </p>
       <div className="flex items-center gap-2 mt-3">
         <span className="text-[10px] font-semibold text-umblue-400 bg-umblue-50 px-2.5 py-1 rounded-full">4 materials</span>

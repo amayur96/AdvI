@@ -14,7 +14,7 @@ export default function PresetProgressCard({ completedCount }) {
           Preset Questions
         </h3>
         <span className="text-xs font-semibold text-umblue-400 bg-umblue-50 px-2.5 py-1 rounded-full">
-          Lecture 10
+          Lecture 4
         </span>
       </div>
 

@@ -93,12 +93,12 @@ export const diveDeepData = {
 };
 
 export const conceptMastery = [
-  { label: "Tokenization", pct: 92, color: "var(--success)" },
-  { label: "Transfer Learning", pct: 85, color: "var(--success)" },
-  { label: "Prompt Templates", pct: 74, color: "var(--warning)" },
-  { label: "Hyperparameters", pct: 55, color: "var(--danger-400)" },
-  { label: "Catastrophic Forget.", pct: 38, color: "var(--danger-600)" },
-  { label: "LoRA Trade-offs", pct: 22, color: "var(--danger-700)" },
+  { label: "Tokenization", pct: 92 },
+  { label: "Transfer Learning", pct: 85 },
+  { label: "Prompt Templates", pct: 74 },
+  { label: "Hyperparameters", pct: 55 },
+  { label: "Catastrophic Forget.", pct: 38 },
+  { label: "LoRA Trade-offs", pct: 22 },
 ];
 
 export const questionResponses = [
@@ -111,7 +111,7 @@ export const questionResponses = [
 
 export const dashboardStats = [
   { label: "Active Students", value: "128", change: "+12% from last lecture", up: true },
-  { label: "Avg. Comprehension", value: "67%", change: "-8% from last lecture", up: false, valueColor: "var(--warning)" },
+  { label: "Avg. Comprehension", value: "67%", change: "-8% from last lecture", up: false },
   { label: "AI Conversations", value: "342", change: "+23% from last lecture", up: true },
   { label: "Questions Completed", value: "89%", change: "+5% from last lecture", up: true },
 ];

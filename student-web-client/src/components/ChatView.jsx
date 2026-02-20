@@ -57,7 +57,7 @@ export default function ChatView({ messages, onSend, loading = false, disabled =
           </svg>
         </div>
         <div className="text-white text-sm font-semibold">AdvI Study Agent</div>
-        <div className="text-white/50 text-xs">Lecture 10 – Fine-Tuning LLMs</div>
+        <div className="text-white/50 text-xs">Lecture 4 – Functions</div>
       </div>
 
       {/* Messages */}

@@ -1,47 +1,45 @@
 export const student = {
   name: "Alex Johnson",
   initials: "A",
-  course: "CS 4501 – Intro to AI/ML",
+  course: "EECS 183 – Elementary Programming Concepts in C++",
 };
 
 export const presetQuestions = [
-  { id: 1, text: "Explain the difference between LoRA and full fine-tuning." },
-  { id: 2, text: "What is catastrophic forgetting?" },
-  { id: 3, text: "How do you select hyperparameters for fine-tuning?" },
-  { id: 4, text: "Describe the data preparation pipeline for instruction-tuning." },
-  { id: 5, text: "When should you choose fine-tuning over prompting?" },
+  { id: 1, text: "What is the difference between pass-by-value and pass-by-reference in C++?" },
+  { id: 2, text: "Explain how a for loop differs from a while loop, and when you'd pick one over the other." },
+  { id: 3, text: "What is the purpose of a header file (.h) and how does it relate to the .cpp file?" },
 ];
 
 export const lectureTopics = [
-  { id: 1, label: "Lec 1 – Intro to ML" },
-  { id: 5, label: "Lec 5 – Neural Nets" },
-  { id: 8, label: "Lec 8 – Transformers" },
-  { id: 10, label: "Lec 10 – Fine-Tuning" },
-  { id: 11, label: "Lec 11 – RAG" },
-  { id: 12, label: "Lec 12 – AI Ethics" },
+  { id: 1, label: "Lec 1 – Intro to C++" },
+  { id: 2, label: "Lec 2 – Variables & Data Types" },
+  { id: 3, label: "Lec 3 – Control Flow" },
+  { id: 4, label: "Lec 4 – Functions" },
+  { id: 5, label: "Lec 5 – Arrays & Strings" },
+  { id: 6, label: "Lec 6 – Pointers & References" },
 ];
 
 export const keyConcepts = [
-  { label: "Tokenization", status: "strong" },
-  { label: "Transfer Learning", status: "strong" },
-  { label: "Prompt Templates", status: "partial" },
-  { label: "Hyperparameters", status: "weak" },
-  { label: "Catastrophic Forgetting", status: "weak" },
-  { label: "LoRA Trade-offs", status: "weak" },
+  { label: "Variables & Types", status: "strong" },
+  { label: "Control Flow", status: "strong" },
+  { label: "Functions", status: "partial" },
+  { label: "Pass-by-Reference", status: "weak" },
+  { label: "Header Files", status: "weak" },
+  { label: "Pointers", status: "weak" },
 ];
 
 export const confidenceBars = [
-  { label: "LoRA", pct: 82, color: "var(--success)" },
-  { label: "Forgetting", pct: 65, color: "var(--warning)" },
-  { label: "Hyperparams", pct: 20, color: "var(--danger)" },
-  { label: "Data Prep", pct: 10, color: "#CBD5E1" },
+  { label: "Pass-by-value", pct: 82, color: "var(--success)" },
+  { label: "Loops", pct: 65, color: "var(--warning)" },
+  { label: "Header Files", pct: 20, color: "var(--danger)" },
+  { label: "Pointers", pct: 10, color: "#CBD5E1" },
 ];
 
 export const initialMessages = [
   {
     role: "ai",
     presetLabel: null,
-    text: 'Hey Alex! 👋 Welcome back. We\'re working through <strong>Lecture 10 – Fine-Tuning LLMs</strong> today. I have 5 questions to help check your understanding, and then we can dive into anything you\'d like to explore further. Ready to get started?',
+    text: 'Hey Alex! 👋 Welcome back. We\'re working through <strong>Lecture 4 – Functions</strong> today. I have 3 questions to help check your understanding, and then we can dive into anything you\'d like to explore further. Ready to get started?',
     time: "2:30 PM",
   },
   {
@@ -51,71 +49,71 @@ export const initialMessages = [
   },
   {
     role: "ai",
-    presetLabel: "Preset Question 1 of 5",
-    text: "<strong>Can you explain the key differences between LoRA fine-tuning and full-parameter fine-tuning?</strong> Think about when you might choose one approach over the other.",
+    presetLabel: "Preset Question 1 of 3",
+    text: "<strong>What is the difference between pass-by-value and pass-by-reference in C++?</strong> Think about what happens to the original variable in each case.",
     time: "2:31 PM",
   },
   {
     role: "student",
-    text: "LoRA only trains small adapter matrices added to the attention layers, while full fine-tuning updates all model parameters. LoRA uses less memory and is faster, but full fine-tuning might give better results for very different domains. I'd use LoRA for most cases since it's efficient.",
+    text: "Pass-by-value copies the argument into the function parameter, so changes inside the function don't affect the original. Pass-by-reference passes the actual variable using &, so modifications inside the function change the original value too.",
     time: "2:33 PM",
   },
   {
     role: "ai",
     presetLabel: null,
-    text: "Great answer! You've captured the core trade-off well. One small addition — LoRA's \"rank\" parameter controls how expressive those adapters are. A higher rank means more parameters but better capacity. Could you think of a scenario where LoRA with a <em>high rank</em> might still be preferred over full fine-tuning?",
+    text: "Great answer! You've got the core idea down. One thing to add — pass-by-reference also avoids copying large objects, which can be important for performance. Can you think of a situation where you'd use <code>const&</code> instead of just <code>&</code>?",
     time: "2:33 PM",
   },
   {
     role: "student",
-    text: "Maybe when you have limited GPU memory but still want strong adaptation? High-rank LoRA gives you more capacity without the full memory cost of updating every parameter.",
+    text: "When you want the performance benefit of avoiding a copy but don't want the function to accidentally modify the original? Like passing a large string to a print function.",
     time: "2:34 PM",
   },
   {
     role: "ai",
     presetLabel: null,
-    text: "Exactly right! ✅ That's a solid understanding of LoRA. Let's move on to the next question.",
+    text: "Exactly right! ✅ <code>const&</code> gives you the best of both worlds — no copy, no accidental mutation. Great understanding. Let's move on!",
     time: "2:34 PM",
   },
   {
     role: "ai",
-    presetLabel: "Preset Question 2 of 5",
-    text: "<strong>What is catastrophic forgetting, and what strategies can be used to mitigate it during fine-tuning?</strong>",
+    presetLabel: "Preset Question 2 of 3",
+    text: "<strong>Explain how a <code>for</code> loop differs from a <code>while</code> loop, and when you'd pick one over the other.</strong>",
     time: "2:35 PM",
   },
   {
     role: "student",
-    text: "Catastrophic forgetting is when a model loses its general abilities after being fine-tuned on a specific task. You can mitigate it by using a lower learning rate, or maybe regularization techniques? I'm not totally sure about the specifics.",
+    text: "A for loop is best when you know how many times to iterate — it puts the initializer, condition, and increment all in one line. A while loop is better when you don't know the number of iterations upfront, like reading input until the user types 'quit'.",
     time: "2:37 PM",
   },
   {
     role: "ai",
     presetLabel: null,
-    text: "You're on the right track! Lower learning rates do help. The specific regularization technique you might be thinking of is <strong>Elastic Weight Consolidation (EWC)</strong> — it identifies which weights were important for previous tasks and penalizes changing them. Another approach is <strong>mixed-task training</strong>, where you include some of the original training data alongside your new data. Does that help clarify things?",
+    text: "Spot on! And there's also <code>do-while</code>, which guarantees the body runs at least once since the condition is checked <em>after</em> each iteration. A classic use case is menu-driven programs where you always want to show the menu at least once. Does that distinction make sense?",
     time: "2:37 PM",
   },
   {
     role: "student",
-    text: "Yes! EWC makes sense — protect the important weights. And mixing data is clever. Got it, thanks!",
+    text: "Yes! That makes sense — do-while for 'run first, check later' situations. Got it.",
     time: "2:38 PM",
   },
   {
     role: "ai",
     presetLabel: null,
-    text: "Great recovery! ✅ You've got a solid grasp now. Let's keep the momentum going.",
+    text: "Nice work! ✅ Two down, one to go.",
     time: "2:38 PM",
   },
   {
     role: "ai",
-    presetLabel: "Preset Question 3 of 5",
-    text: "<strong>How would you approach selecting hyperparameters — specifically learning rate, batch size, and number of epochs — when fine-tuning a pre-trained model?</strong> What factors would influence your choices?",
+    presetLabel: "Preset Question 3 of 3",
+    text: "<strong>What is the purpose of a header file (<code>.h</code>) and how does it relate to the <code>.cpp</code> file?</strong> Think about why we split code into two files.",
     time: "2:39 PM",
   },
 ];
 
 export const aiResponses = [
-  "That's an interesting perspective! When selecting hyperparameters for fine-tuning, consider that <strong>learning rate</strong> should typically be 10-100x smaller than pre-training (e.g., 1e-5 to 5e-5). <strong>Batch size</strong> depends on GPU memory — smaller batches add noise that can help generalization. And <strong>epochs</strong> should be kept low (2-5) to avoid overfitting on your fine-tuning data. Would you like to explore any of these in more detail?",
-  "Great question! The key insight is that fine-tuning requires a balance between adapting to new data and retaining the model's pre-trained knowledge. Think of it like adjusting a recipe — small changes can have a big impact. What specific aspect would you like to dig deeper into?",
-  "That's a thoughtful approach. One thing to keep in mind is that the optimal hyperparameters often depend on your dataset size. With smaller datasets, lower learning rates and fewer epochs help prevent overfitting. With larger datasets, you have more room to experiment. Want me to walk through a concrete example?",
-  "Interesting! You're building a good mental model here. Remember that hyperparameter tuning isn't just trial and error — techniques like learning rate schedulers (warmup + decay) can automate part of the process. Shall we move on to the next question, or would you like to explore this further?",
+  "Good start! A header file (<code>.h</code>) contains <strong>declarations</strong> — function prototypes, class definitions, and constants — while the <code>.cpp</code> file contains the <strong>implementations</strong>. This separation lets other files use your functions by including just the header, without needing to see the full implementation. Would you like to walk through an example?",
+  "Great question! Think of the header file like a menu at a restaurant — it tells you what's available (function names and signatures), while the .cpp file is the kitchen where the actual work happens. The <code>#include</code> directive copies the header's contents into any file that needs it. What part would you like to explore more?",
+  "That's a thoughtful answer. One key benefit of this split is <strong>separate compilation</strong> — if you change only the .cpp file, you only need to recompile that one file, not everything that uses it. The header acts as a stable contract. Want me to explain include guards (<code>#ifndef</code>) too?",
+  "Interesting! You're building a solid mental model. Remember that <code>#include</code> is literally a copy-paste by the preprocessor. That's why include guards or <code>#pragma once</code> are important — they prevent the same header from being included twice. Shall we explore that further?",
 ];

@@ -1,21 +1,23 @@
 import { getLectures, uploadLecture, generateQuestions } from "./api";
 
 const SEED_LECTURE = {
-  lectureId: "lec10",
-  title: "Fine-Tuning LLMs",
-  content: `This lecture covers fine-tuning large language models (LLMs).
+  lectureId: "lec4",
+  title: "Functions",
+  content: `This lecture covers functions in C++ — one of the foundational building blocks of structured programming.
 
 Key Topics:
 
-1) LoRA (Low-Rank Adaptation) — Instead of updating all model parameters, LoRA trains small adapter matrices inserted into attention layers. The "rank" parameter controls the capacity of these adapters. Benefits: dramatically lower memory usage, faster training, ability to store multiple task-specific adapters.
+1) Pass-by-Value vs Pass-by-Reference — Pass-by-value copies the argument into the parameter; changes inside the function do not affect the caller. Pass-by-reference (using &) passes the actual variable; modifications inside the function persist after the call. Use const& to avoid copying large objects without allowing mutation.
 
-2) Full Fine-Tuning — Updates every weight in the model. Best for large domain shifts where the pre-trained model's knowledge is insufficient. Drawback: requires significant compute, risk of overfitting on small datasets.
+2) For Loops vs While Loops — A for loop is ideal when the number of iterations is known (initializer, condition, and increment on one line). A while loop is better when the exit condition is not count-based (e.g., reading input until EOF). A do-while loop guarantees at least one execution of the body.
 
-3) Catastrophic Forgetting — When fine-tuning overwrites the model's general knowledge. The model "forgets" how to do tasks it previously handled well. Mitigation strategies: Elastic Weight Consolidation (EWC) which protects important weights, using lower learning rates, and mixed-task training where you include original training data.
+3) Header Files (.h) and Source Files (.cpp) — Header files contain declarations (function prototypes, class definitions, constants). Source files contain implementations. This separation enables separate compilation: changing a .cpp file only requires recompiling that file. Include guards (#ifndef / #define / #endif) or #pragma once prevent double inclusion.
 
-4) Hyperparameter Selection — For fine-tuning, use learning rates of 1e-5 to 5e-5 (10-100x smaller than pre-training). Keep epochs low (2-5) to avoid overfitting. Batch size depends on GPU memory; smaller batches add regularization noise.
+4) Function Prototypes — Declaring a function's signature before its definition allows the compiler to check calls before seeing the full implementation. Prototypes typically go in header files.
 
-5) Data Preparation — Instruction-tuning requires data in system/user/assistant format. Steps: raw data cleaning, prompt template construction, proper tokenization. The quality and format of your fine-tuning data has more impact than quantity.`,
+5) Scope and Lifetime — Local variables exist only within their enclosing block. Parameters are local to the function. Global variables are accessible everywhere but should be avoided. Static local variables persist across calls.
+
+6) Default Arguments — C++ allows default parameter values (e.g., void print(int x, int base = 10)). Defaults must be specified from right to left and are typically declared in the header file.`,
 };
 
 export async function ensureSeeded() {
@@ -24,7 +26,6 @@ export async function ensureSeeded() {
     const exists = lectures.some((l) => l.lecture_id === SEED_LECTURE.lectureId);
     if (exists) return true;
   } catch {
-    // backend might not be running
     return false;
   }
 
