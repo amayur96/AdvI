@@ -2,6 +2,8 @@
 
 AdvI is a two-sided AI learning platform that connects **students** and **faculty** through a continuous feedback loop. Students learn with an AI study agent, faculty monitor learning gaps in real time, and both experiences stay synchronized through shared analytics and lecture-grounded intelligence.
 
+This project was built at an AI hackathon at the University of Michigan
+
 ## Overview
 
 AdvI is organized into three layers:
