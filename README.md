@@ -76,34 +76,6 @@ API docs available at **http://localhost:8000/docs**
 
 ## Modules
 
-### Shared Styles (`shared-styles/`)
-
-Centralized design system consumed by both web clients. Published as `@advi/shared-styles` via npm workspaces.
-
-| File | Purpose | Consumer |
-|---|---|---|
-| `tokens.js` | JS design tokens (colors, fonts, shadows) | Any JS/TS code |
-| `variables.css` | CSS custom properties (`:root` vars) | Faculty app (plain CSS) |
-| `tailwind-theme.css` | Tailwind v4 `@theme` block | Student app (Tailwind) |
-| `base.css` | Reset, font import, global base styles | Both apps |
-| `animations.css` | Shared keyframes (typing, modal, fade) | Both apps |
-
-**Usage in a Tailwind app:**
-
-```css
-@import "tailwindcss";
-@import "@advi/shared-styles/tailwind-theme.css";
-@import "@advi/shared-styles/animations.css";
-```
-
-**Usage in a plain CSS app:**
-
-```css
-@import "@advi/shared-styles/variables.css";
-@import "@advi/shared-styles/base.css";
-@import "@advi/shared-styles/animations.css";
-```
-
 ### Backend API (`app/`)
 
 FastAPI + OpenAI backend with two core components:
@@ -148,17 +120,9 @@ React + Vite + **Tailwind CSS** application with a bento-grid dashboard UI in **
 cd student-web-client
 npm run dev
 ```
-
 Opens at **http://localhost:5174** (or next available port)
 
-### Static Wireframes
 
-Open directly in any browser — no build step needed:
-
-```bash
-open faculty-wireframe.html
-open student-wireframe.html
-```
 
 ## System Architecture
 
@@ -169,27 +133,3 @@ The architecture follows a layered model with role-specific flows:
 | **Frontend Layer** | Student UI, Faculty UI | Collect student/faculty interactions and display learning state |
 | **Intelligence Layer** | AI Agent, LLM API | Personalize student tutoring and generate faculty-facing insights |
 | **Data Layer** | Student DB, Faculty DB | Persist student evidence and lecture context for analysis |
-
-### Flow breakdown
-
-1. **Student flow**
-   - Student interacts with the Student UI.
-   - AI Agent checks preset-question completion and prior conversation memory.
-   - Student answers and messages are stored in Student DB.
-
-2. **Faculty flow**
-   - Faculty uses Faculty UI to review progress and manage lecture context.
-   - LLM API maps student performance to lecture concepts from Faculty DB.
-   - Faculty receives targeted insight cards, concept-risk signals, and suggested interventions.
-
-3. **Closed-loop flow**
-   - Faculty interventions (new questions, emphasis changes, concept focus) feed back into student guidance.
-   - New student responses are re-analyzed and reflected in faculty analytics, creating a continuous improvement loop.
-
-## Prerequisites
-
-- [Python](https://www.python.org/) 3.11+ (for backend)
-- [Node.js](https://nodejs.org/) v18+ (for React modules)
-- npm (included with Node.js)
-- An [OpenAI API key](https://platform.openai.com/api-keys) (for backend)
-- A modern web browser (for static wireframes)
